@@ -10,7 +10,7 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 16px; padding-top: env(safe-area-inset-top, 16px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); min-height: 100vh; overflow-x: hidden; }
-h1 { font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #C8A45C; }
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #C8A45C; }
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
 .card { background: #1a1a1a; border-radius: 14px; padding: 14px; }
 .card-label { font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -32,6 +32,9 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .login-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; gap: 16px; }
 .login-wrap input { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 14px 16px; color: #e5e5e5; font-size: 14px; width: 100%; max-width: 300px; text-align: center; }
 .login-wrap button { background: #C8A45C; color: #0a0a0a; border: none; border-radius: 12px; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; max-width: 300px; }
+.app-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.app-tab { padding: 7px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; background: #1a1a1a; color: #666; border: none; }
+.app-tab.active { background: #C8A45C; color: #0a0a0a; }
 .time-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
 .time-tab { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 500; cursor: pointer; background: #111; color: #666; border: none; }
 .time-tab.active { background: #222; color: #e5e5e5; }
@@ -59,6 +62,8 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 .footer { text-align: center; padding: 20px 0; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .footer-info { width: 100%; font-size: 10px; color: #333; margin-top: 4px; }
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #151515; }
+.stat-row:last-child { border-bottom: none; }
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; animation: slideDown 0.3s ease, fadeOut 0.5s ease 2.5s; pointer-events: none; }
 .toast-dl { background: #0a1a2a; color: #60a5fa; border: 1px solid #1a3a5a; }
 .toast-iap { background: #0a2a0a; color: #4ade80; border: 1px solid #1a4a1a; }
@@ -66,8 +71,6 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 @keyframes fadeOut { to { opacity: 0; } }
 .confetti { position: fixed; top: -10px; width: 8px; height: 8px; z-index: 9998; pointer-events: none; border-radius: 2px; }
 @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #151515; }
-.stat-row:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -80,7 +83,13 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 </div>
 
 <div id="dashboard" style="display:none;">
-  <h1><span class="live-dot"></span>PersonalCapsule</h1>
+  <h1><span class="live-dot"></span>Indie Analytics</h1>
+
+  <div class="app-tabs">
+    <button class="app-tab active" onclick="filterApp('all', this)">All</button>
+    <button class="app-tab" onclick="filterApp('personalcapsule', this)">PC</button>
+    <button class="app-tab" onclick="filterApp('yula', this)">Yula</button>
+  </div>
 
   <div class="time-tabs">
     <button class="time-tab" onclick="filterTime('today', this)">Today</button>
@@ -160,6 +169,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 var SUPABASE_URL = 'https://vpsmaqsessodayyjamnd.supabase.co';
 var SECRET_KEY = '';
 var allEvents = [];
+var currentApp = 'all';
 var currentTime = 'lifetime';
 var prevDownloads = -1;
 var prevRevenue = -1;
@@ -217,7 +227,7 @@ function login() {
   document.getElementById('loginError').textContent = '';
   loadFxRates().then(function() { return loadData(); }).then(function(ok) {
     if (ok) {
-      localStorage.setItem('sb_key_v3', SECRET_KEY);
+      localStorage.setItem('sb_key_v4', SECRET_KEY);
       document.getElementById('loginView').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
     }
@@ -225,7 +235,7 @@ function login() {
 }
 
 function logout() {
-  localStorage.removeItem('sb_key_v3');
+  localStorage.removeItem('sb_key_v4');
   SECRET_KEY = '';
   allEvents = [];
   prevDownloads = -1;
@@ -236,14 +246,14 @@ function logout() {
 }
 
 function init() {
-  var saved = localStorage.getItem('sb_key_v3');
+  var saved = localStorage.getItem('sb_key_v4');
   if (saved) {
     SECRET_KEY = saved;
     loadFxRates().then(function() { return loadData(); }).then(function(ok) {
       if (ok) {
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
-      } else { localStorage.removeItem('sb_key_v3'); }
+      } else { localStorage.removeItem('sb_key_v4'); }
     });
   }
 }
@@ -285,6 +295,14 @@ function checkForNew() {
   }
   prevDownloads = downloads;
   prevRevenue = revenue;
+}
+
+function filterApp(app, btn) {
+  currentApp = app;
+  var tabs = document.querySelectorAll('.app-tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  btn.classList.add('active');
+  render();
 }
 
 function showDeleteConfirm(id) {
@@ -333,13 +351,14 @@ function filterTime(t, btn) {
 }
 
 function getFiltered() {
-  if (currentTime === 'lifetime') return allEvents;
+  var events = currentApp === 'all' ? allEvents : allEvents.filter(function(e) { return e.app === currentApp; });
+  if (currentTime === 'lifetime') return events;
   var now = new Date();
   var cutoff;
   if (currentTime === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   else if (currentTime === '7d') cutoff = new Date(now - 7 * 86400000);
   else if (currentTime === '30d') cutoff = new Date(now - 30 * 86400000);
-  return allEvents.filter(function(e) { return new Date(e.created_at) >= cutoff; });
+  return events.filter(function(e) { return new Date(e.created_at) >= cutoff; });
 }
 
 function makeBar(label, value, max, color) {
@@ -384,7 +403,7 @@ function buildChart(events) {
     }
   } else {
     title = 'All time (weekly)';
-    if (events.length === 0) { return { title: title, html: '<div class="empty">No data yet</div>' }; }
+    if (events.length === 0) return { title: title, html: '<div class="empty">No data yet</div>' };
     var sorted = events.slice().sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
     var first = new Date(sorted[0].created_at);
     var now = new Date();
@@ -442,12 +461,10 @@ function render() {
   var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
   document.getElementById('conversionRate').textContent = convRate + '%';
 
-  // Dynamic chart
   var chart = buildChart(events);
   document.getElementById('chartTitle').textContent = chart.title;
   document.getElementById('dynamicChart').innerHTML = chart.html;
 
-  // Revenue by currency
   var byCurrency = {};
   paidPurchases.forEach(function(e) {
     var c = e.currency || 'USD';
@@ -455,9 +472,7 @@ function render() {
     byCurrency[c].total += parseFloat(e.price || 0);
     byCurrency[c].count++;
   });
-  if (offerPurchases.length > 0) {
-    byCurrency['FREE'] = { total: 0, count: offerPurchases.length };
-  }
+  if (offerPurchases.length > 0) byCurrency['FREE'] = { total: 0, count: offerPurchases.length };
   var currKeys = Object.keys(byCurrency).sort(function(a, b) { return byCurrency[b].total - byCurrency[a].total; });
   var revHtml = '';
   currKeys.forEach(function(c) {
@@ -470,13 +485,11 @@ function render() {
   });
   document.getElementById('revenueByCurrency').innerHTML = revHtml || '<div class="empty">No revenue yet</div>';
 
-  // Source breakdown
   var totalPurch = purchases.length || 1;
   var srcHtml = makeBar('Paid', paidPurchases.length, totalPurch, '#4ade80');
   srcHtml += makeBar('Code', offerPurchases.length, totalPurch, '#C8A45C');
   document.getElementById('sourceBreakdown').innerHTML = purchases.length > 0 ? srcHtml : '<div class="empty">No purchases yet</div>';
 
-  // Country bars
   var countries = {};
   events.forEach(function(e) { var l = (e.locale || '??').toUpperCase(); countries[l] = (countries[l] || 0) + 1; });
   var sortedC = Object.entries(countries).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
@@ -485,7 +498,6 @@ function render() {
     ? sortedC.map(function(c) { return makeBar(c[0], c[1], maxC, '#60a5fa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
-  // Device bars
   var devices = {};
   events.forEach(function(e) { var d = e.device || '??'; devices[d] = (devices[d] || 0) + 1; });
   var sortedD = Object.entries(devices).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 6);
@@ -494,7 +506,6 @@ function render() {
     ? sortedD.map(function(d) { return makeBar(d[0], d[1], maxD, '#a78bfa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
-  // Recent events
   var recent = events.slice(0, 30);
   document.getElementById('emptyState').style.display = recent.length === 0 ? 'block' : 'none';
   document.getElementById('eventsTable').innerHTML = recent.map(function(e) {
@@ -511,7 +522,8 @@ function render() {
     } else if (e.locale) {
       detail = (e.locale).toUpperCase();
     }
-    return '<tr><td style="white-space:nowrap;font-size:11px;color:#666;">' + time + '</td><td>' + badge + '</td><td style="font-size:12px;color:#888;">' + detail + '</td><td id="del-' + e.id + '"><button class="btn-del" onclick="showDeleteConfirm(' + e.id + ')">✕</button></td></tr>';
+    var appLabel = e.app === 'yula' ? '<span style="font-size:9px;color:#60a5fa;margin-left:4px;">Y</span>' : '';
+    return '<tr><td style="white-space:nowrap;font-size:11px;color:#666;">' + time + '</td><td>' + badge + appLabel + '</td><td style="font-size:12px;color:#888;">' + detail + '</td><td id="del-' + e.id + '"><button class="btn-del" onclick="showDeleteConfirm(' + e.id + ')">✕</button></td></tr>';
   }).join('');
 }
 
