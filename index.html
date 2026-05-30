@@ -11,7 +11,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 16px; padding-top: env(safe-area-inset-top, 16px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); min-height: 100vh; overflow-x: hidden; }
 h1 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #C8A45C; }
-.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.last-updated { font-size: 10px; color: #444; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
 .card { background: #1a1a1a; border-radius: 14px; padding: 14px; }
 .card-label { font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .card-value { font-size: 26px; font-weight: 600; }
@@ -20,6 +22,10 @@ h1 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #C8A45C; }
 .green { color: #4ade80; }
 .blue { color: #60a5fa; }
 .purple { color: #a78bfa; }
+.teal { color: #2dd4bf; }
+.growth-up { color: #4ade80; font-size: 11px; font-weight: 600; }
+.growth-down { color: #f87171; font-size: 11px; font-weight: 600; }
+.growth-flat { color: #888; font-size: 11px; }
 .section { background: #1a1a1a; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
 .section-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: 0.5px; }
 table { width: 100%; border-collapse: collapse; }
@@ -40,6 +46,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .time-tab.active { background: #222; color: #e5e5e5; }
 .error { color: #f87171; font-size: 13px; margin-top: 8px; }
 .btn-sm { background: none; border: 1px solid #222; color: #666; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 500; }
+.btn-sm.loading { opacity: 0.4; pointer-events: none; }
 .btn-del { background: none; border: none; color: #333; cursor: pointer; font-size: 16px; padding: 4px 8px; }
 .btn-del:hover { color: #f87171; }
 .btn-danger { background: none; border: 1px solid #7f1d1d; color: #f87171; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 500; }
@@ -64,7 +71,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .footer-info { width: 100%; font-size: 10px; color: #333; margin-top: 4px; }
 .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #151515; }
 .stat-row:last-child { border-bottom: none; }
-.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; animation: slideDown 0.3s ease, fadeOut 0.5s ease 2.5s; pointer-events: none; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; animation: slideDown 0.3s ease, fadeOut 0.5s ease 2.5s; pointer-events: none; white-space: nowrap; }
 .toast-dl { background: #0a1a2a; color: #60a5fa; border: 1px solid #1a3a5a; }
 .toast-iap { background: #0a2a0a; color: #4ade80; border: 1px solid #1a4a1a; }
 @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
@@ -83,7 +90,10 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 </div>
 
 <div id="dashboard" style="display:none;">
-  <h1><span class="live-dot"></span>Indie Analytics</h1>
+  <div class="header-row">
+    <h1 style="margin:0;"><span class="live-dot"></span>Indie Analytics</h1>
+    <span class="last-updated" id="lastUpdated"></span>
+  </div>
 
   <div class="app-tabs">
     <button class="app-tab active" onclick="filterApp('all', this)">All</button>
@@ -98,26 +108,45 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
     <button class="time-tab active" onclick="filterTime('lifetime', this)">Lifetime</button>
   </div>
 
+  <!-- Row 1: Downloads | Purchases -->
   <div class="grid">
     <div class="card">
       <div class="card-label">Downloads</div>
       <div class="card-value blue" id="totalDownloads">-</div>
-      <div class="card-sub" id="todayDownloads"></div>
+      <div class="card-sub" id="dlSub"></div>
     </div>
     <div class="card">
       <div class="card-label">Purchases</div>
       <div class="card-value green" id="totalPurchases">-</div>
-      <div class="card-sub" id="todayPurchases"></div>
+      <div class="card-sub" id="prSub"></div>
     </div>
+  </div>
+
+  <!-- Row 2: Revenue | Proceeds -->
+  <div class="grid">
     <div class="card">
       <div class="card-label">Revenue</div>
       <div class="card-value gold" id="totalRevenue">-</div>
-      <div class="card-sub" id="offerCount"></div>
+      <div class="card-sub" id="revSub"></div>
     </div>
+    <div class="card">
+      <div class="card-label">Proceeds</div>
+      <div class="card-value teal" id="totalProceeds">-</div>
+      <div class="card-sub">after Apple 15%</div>
+    </div>
+  </div>
+
+  <!-- Row 3: Conversion | ARPU -->
+  <div class="grid" style="margin-bottom:20px;">
     <div class="card">
       <div class="card-label">Conversion</div>
       <div class="card-value purple" id="conversionRate">-</div>
       <div class="card-sub">purchase / download</div>
+    </div>
+    <div class="card">
+      <div class="card-label">ARPU</div>
+      <div class="card-value gold" id="arpu">-</div>
+      <div class="card-sub">revenue / download</div>
     </div>
   </div>
 
@@ -159,7 +188,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
   </div>
 
   <div class="footer">
-    <button class="btn-sm" onclick="loadData()">Refresh</button>
+    <button class="btn-sm" id="refreshBtn" onclick="manualRefresh()">Refresh</button>
     <button class="btn-sm" onclick="logout()">Logout</button>
     <div class="footer-info" id="rateInfo"></div>
   </div>
@@ -227,7 +256,7 @@ function login() {
   document.getElementById('loginError').textContent = '';
   loadFxRates().then(function() { return loadData(); }).then(function(ok) {
     if (ok) {
-      localStorage.setItem('sb_key_v4', SECRET_KEY);
+      localStorage.setItem('sb_key_v5', SECRET_KEY);
       document.getElementById('loginView').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
     }
@@ -235,7 +264,7 @@ function login() {
 }
 
 function logout() {
-  localStorage.removeItem('sb_key_v4');
+  localStorage.removeItem('sb_key_v5');
   SECRET_KEY = '';
   allEvents = [];
   prevDownloads = -1;
@@ -246,16 +275,26 @@ function logout() {
 }
 
 function init() {
-  var saved = localStorage.getItem('sb_key_v4');
+  var saved = localStorage.getItem('sb_key_v5');
   if (saved) {
     SECRET_KEY = saved;
     loadFxRates().then(function() { return loadData(); }).then(function(ok) {
       if (ok) {
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
-      } else { localStorage.removeItem('sb_key_v4'); }
+      } else { localStorage.removeItem('sb_key_v5'); }
     });
   }
+}
+
+function manualRefresh() {
+  var btn = document.getElementById('refreshBtn');
+  btn.classList.add('loading');
+  btn.textContent = '...';
+  loadData().then(function() {
+    btn.classList.remove('loading');
+    btn.textContent = 'Refresh';
+  });
 }
 
 function loadData() {
@@ -268,6 +307,8 @@ function loadData() {
     }
     return res.json().then(function(data) {
       allEvents = data;
+      var now = new Date();
+      document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
       checkForNew();
       render();
       return true;
@@ -361,6 +402,26 @@ function getFiltered() {
   return events.filter(function(e) { return new Date(e.created_at) >= cutoff; });
 }
 
+function getYesterday() {
+  var now = new Date();
+  var yStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  var yEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var appEvents = currentApp === 'all' ? allEvents : allEvents.filter(function(e) { return e.app === currentApp; });
+  return appEvents.filter(function(e) {
+    var d = new Date(e.created_at);
+    return d >= yStart && d < yEnd;
+  });
+}
+
+function growthBadge(today, yesterday, suffix) {
+  if (yesterday === 0 && today === 0) return '<span class="growth-flat">—</span>';
+  if (yesterday === 0) return '<span class="growth-up">new</span>';
+  var pct = Math.round(((today - yesterday) / yesterday) * 100);
+  if (pct > 0) return '<span class="growth-up">↑' + pct + '%' + (suffix || '') + '</span>';
+  if (pct < 0) return '<span class="growth-down">↓' + Math.abs(pct) + '%' + (suffix || '') + '</span>';
+  return '<span class="growth-flat">→ 0%</span>';
+}
+
 function makeBar(label, value, max, color) {
   var pct = max > 0 ? Math.round((value / max) * 100) : 0;
   return '<div class="bar-row">'
@@ -444,22 +505,34 @@ function render() {
   var paidPurchases = purchases.filter(function(e) { return e.source !== 'offerCode'; });
   var offerPurchases = purchases.filter(function(e) { return e.source === 'offerCode'; });
 
-  var todayAll = allEvents.filter(function(e) { return e.created_at && e.created_at.startsWith(today); });
-  var todayDL = todayAll.filter(function(e) { return e.event === 'download'; }).length;
-  var todayPR = todayAll.filter(function(e) { return e.event === 'purchase'; }).length;
-
   var revenueUSD = 0;
   paidPurchases.forEach(function(e) { revenueUSD += toUSD(e.price, e.currency); });
+  var proceedsUSD = revenueUSD * 0.85;
+  var arpuVal = downloads.length > 0 ? (revenueUSD / downloads.length) : 0;
+  var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
+
+  // Growth (today only)
+  var dlGrowth = '', prGrowth = '', revGrowth = '';
+  if (currentTime === 'today') {
+    var yEvents = getYesterday();
+    var yDL = yEvents.filter(function(e) { return e.event === 'download'; }).length;
+    var yPR = yEvents.filter(function(e) { return e.event === 'purchase'; }).length;
+    var yRev = 0;
+    yEvents.filter(function(e) { return e.event === 'purchase' && e.source !== 'offerCode'; }).forEach(function(e) { yRev += toUSD(e.price, e.currency); });
+    dlGrowth = ' ' + growthBadge(downloads.length, yDL, ' vs yesterday');
+    prGrowth = ' ' + growthBadge(purchases.length, yPR, ' vs yesterday');
+    revGrowth = ' ' + growthBadge(Math.round(revenueUSD), Math.round(yRev), ' vs yesterday');
+  }
 
   document.getElementById('totalDownloads').textContent = downloads.length;
-  document.getElementById('todayDownloads').textContent = todayDL + ' today';
+  document.getElementById('dlSub').innerHTML = offerPurchases.length + ' codes / ' + paidPurchases.length + ' paid' + dlGrowth;
   document.getElementById('totalPurchases').textContent = purchases.length;
-  document.getElementById('todayPurchases').textContent = todayPR + ' today';
+  document.getElementById('prSub').innerHTML = (currentTime === 'today' ? purchases.length + ' today' : downloads.length + ' users') + prGrowth;
   document.getElementById('totalRevenue').textContent = '$' + revenueUSD.toFixed(2);
-  document.getElementById('offerCount').textContent = offerPurchases.length + ' codes / ' + paidPurchases.length + ' paid';
-
-  var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
+  document.getElementById('revSub').innerHTML = 'gross' + revGrowth;
+  document.getElementById('totalProceeds').textContent = '$' + proceedsUSD.toFixed(2);
   document.getElementById('conversionRate').textContent = convRate + '%';
+  document.getElementById('arpu').textContent = '$' + arpuVal.toFixed(2);
 
   var chart = buildChart(events);
   document.getElementById('chartTitle').textContent = chart.title;
