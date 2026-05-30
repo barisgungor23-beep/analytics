@@ -9,7 +9,7 @@
 <title>Indie Analytics</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 16px; padding-top: env(safe-area-inset-top, 16px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 16px; padding-top: env(safe-area-inset-top, 16px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); min-height: 100vh; overflow-x: hidden; }
 h1 { font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #C8A45C; }
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
 .card { background: #1a1a1a; border-radius: 14px; padding: 14px; }
@@ -20,7 +20,6 @@ h1 { font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #C8A45C; }
 .green { color: #4ade80; }
 .blue { color: #60a5fa; }
 .purple { color: #a78bfa; }
-.red { color: #f87171; }
 .section { background: #1a1a1a; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
 .section-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: 0.5px; }
 table { width: 100%; border-collapse: collapse; }
@@ -33,9 +32,6 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .login-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; gap: 16px; }
 .login-wrap input { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 14px 16px; color: #e5e5e5; font-size: 14px; width: 100%; max-width: 300px; text-align: center; }
 .login-wrap button { background: #C8A45C; color: #0a0a0a; border: none; border-radius: 12px; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; max-width: 300px; }
-.tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-.tab { padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; background: #1a1a1a; color: #666; border: none; white-space: nowrap; }
-.tab.active { background: #C8A45C; color: #0a0a0a; }
 .time-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
 .time-tab { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 500; cursor: pointer; background: #111; color: #666; border: none; }
 .time-tab.active { background: #222; color: #e5e5e5; }
@@ -54,16 +50,19 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .chart-section { margin-bottom: 12px; }
 .chart-bars { display: flex; align-items: flex-end; gap: 3px; height: 80px; padding-top: 4px; }
 .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%; justify-content: flex-end; }
-.chart-bar { width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; background: #60a5fa; transition: height 0.3s; }
+.chart-bar { width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; transition: height 0.3s; }
 .chart-label { font-size: 8px; color: #444; }
-.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #151515; }
-.stat-row:last-child { border-bottom: none; }
-.stat-label { font-size: 13px; color: #888; }
-.stat-value { font-size: 13px; font-weight: 500; }
-.footer { text-align: center; padding: 20px 0; display: flex; gap: 8px; justify-content: center; }
 .empty { text-align: center; padding: 24px; color: #333; font-size: 13px; }
 .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; margin-right: 6px; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.footer { text-align: center; padding: 20px 0; display: flex; gap: 8px; justify-content: center; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; animation: slideDown 0.3s ease, fadeOut 0.5s ease 2.5s; pointer-events: none; }
+.toast-dl { background: #0a1a2a; color: #60a5fa; border: 1px solid #1a3a5a; }
+.toast-iap { background: #0a2a0a; color: #4ade80; border: 1px solid #1a4a1a; }
+@keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+@keyframes fadeOut { to { opacity: 0; } }
+.confetti { position: fixed; top: -10px; width: 8px; height: 8px; z-index: 9998; pointer-events: none; border-radius: 2px; }
+@keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
 </style>
 </head>
 <body>
@@ -76,7 +75,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 </div>
 
 <div id="dashboard" style="display:none;">
-  <h1><span class="live-dot"></span>Indie Analytics</h1>
+  <h1><span class="live-dot"></span>PersonalCapsule</h1>
 
   <div id="confirmBar" class="confirm-bar" style="display:none;">
     <span id="confirmText"></span>
@@ -84,13 +83,6 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
       <button class="btn-sm" onclick="cancelDelete()">Cancel</button>
       <button class="btn-danger" onclick="confirmDelete()">Delete</button>
     </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="filterApp('all', this)">All</button>
-    <button class="tab" onclick="filterApp('personalcapsule', this)">PersonalCapsule</button>
-    <button class="tab" onclick="filterApp('yula', this)">Yula</button>
-    <button class="tab" onclick="filterApp('appconsol', this)">AppConsol</button>
   </div>
 
   <div class="time-tabs">
@@ -165,10 +157,35 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 var SUPABASE_URL = 'https://vpsmaqsessodayyjamnd.supabase.co';
 var SECRET_KEY = '';
 var allEvents = [];
-var currentApp = 'all';
 var currentTime = 'all';
 var pendingDeleteIds = [];
 var pendingDeleteAll = false;
+var prevDownloads = -1;
+var prevRevenue = -1;
+
+function confetti() {
+  var colors = ['#C8A45C','#4ade80','#60a5fa','#a78bfa','#f87171','#fbbf24','#e879f9'];
+  for (var i = 0; i < 40; i++) {
+    var el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (4 + Math.random() * 6) + 'px';
+    el.style.height = (4 + Math.random() * 6) + 'px';
+    el.style.animation = 'confettiFall ' + (1.5 + Math.random() * 2) + 's ease forwards';
+    el.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(el);
+    setTimeout(function(e) { e.remove(); }.bind(null, el), 4000);
+  }
+}
+
+function showToast(msg, type) {
+  var el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 3000);
+}
 
 function login() {
   SECRET_KEY = document.getElementById('keyInput').value.trim();
@@ -187,6 +204,8 @@ function logout() {
   localStorage.removeItem('sb_key_v3');
   SECRET_KEY = '';
   allEvents = [];
+  prevDownloads = -1;
+  prevRevenue = -1;
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('loginView').style.display = 'flex';
   document.getElementById('keyInput').value = '';
@@ -215,6 +234,7 @@ function loadData() {
     }
     return res.json().then(function(data) {
       allEvents = data;
+      checkForNew();
       render();
       return true;
     });
@@ -222,6 +242,29 @@ function loadData() {
     document.getElementById('loginError').textContent = 'Connection error';
     return false;
   });
+}
+
+function checkForNew() {
+  var downloads = allEvents.filter(function(e) { return e.event === 'download'; }).length;
+  var revenue = 0;
+  allEvents.filter(function(e) { return e.event === 'purchase' && e.source === 'inApp'; }).forEach(function(e) {
+    if (e.price) revenue += parseFloat(e.price);
+  });
+
+  if (prevDownloads >= 0 && downloads > prevDownloads) {
+    var newDL = downloads - prevDownloads;
+    showToast('+ ' + newDL + ' new download' + (newDL > 1 ? 's' : '') + '!', 'dl');
+    confetti();
+  }
+
+  if (prevRevenue >= 0 && revenue > prevRevenue) {
+    var newRev = (revenue - prevRevenue).toFixed(2);
+    showToast('+ $' + newRev + ' revenue!', 'iap');
+    confetti();
+  }
+
+  prevDownloads = downloads;
+  prevRevenue = revenue;
 }
 
 function deleteEvent(id) {
@@ -256,15 +299,6 @@ function confirmDelete() {
   }).then(function(res) { if (res.ok) { cancelDelete(); loadData(); } });
 }
 
-function filterApp(app, btn) {
-  currentApp = app;
-  var tabs = document.querySelectorAll('.tabs .tab');
-  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
-  btn.classList.add('active');
-  cancelDelete();
-  render();
-}
-
 function filterTime(t, btn) {
   currentTime = t;
   var tabs = document.querySelectorAll('.time-tab');
@@ -274,7 +308,7 @@ function filterTime(t, btn) {
 }
 
 function getFiltered() {
-  var events = currentApp === 'all' ? allEvents : allEvents.filter(function(e) { return e.app === currentApp; });
+  var events = allEvents;
   if (currentTime === 'all') return events;
   var now = new Date();
   var cutoff;
@@ -318,7 +352,7 @@ function render() {
   var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
   document.getElementById('conversionRate').textContent = convRate + '%';
 
-  // Daily chart (last 7 days)
+  // Daily chart
   var days = [];
   for (var i = 6; i >= 0; i--) {
     var d = new Date(Date.now() - i * 86400000);
@@ -326,9 +360,7 @@ function render() {
   }
   var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var dayCounts = days.map(function(day) {
-    return allEvents.filter(function(e) {
-      return e.created_at && e.created_at.startsWith(day) && (currentApp === 'all' || e.app === currentApp);
-    }).length;
+    return allEvents.filter(function(e) { return e.created_at && e.created_at.startsWith(day); }).length;
   });
   var maxDay = Math.max.apply(null, dayCounts) || 1;
 
@@ -344,11 +376,10 @@ function render() {
   }).join('');
 
   // Source breakdown
-  var srcHtml = '';
   var totalPurch = purchases.length || 1;
-  srcHtml += makeBar('IAP', iapPurchases.length, totalPurch, '#4ade80');
+  var srcHtml = makeBar('IAP', iapPurchases.length, totalPurch, '#4ade80');
   srcHtml += makeBar('Code', offerPurchases.length, totalPurch, '#C8A45C');
-  document.getElementById('sourceBreakdown').innerHTML = srcHtml || '<div class="empty">No purchases yet</div>';
+  document.getElementById('sourceBreakdown').innerHTML = purchases.length > 0 ? srcHtml : '<div class="empty">No purchases yet</div>';
 
   // Country bars
   var countries = {};
@@ -393,7 +424,6 @@ function render() {
   }).join('');
 }
 
-// Auto refresh every 60 seconds
 setInterval(function() { if (SECRET_KEY) loadData(); }, 60000);
 
 init();
