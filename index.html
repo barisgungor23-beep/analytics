@@ -57,7 +57,8 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .empty { text-align: center; padding: 24px; color: #333; font-size: 13px; }
 .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; margin-right: 6px; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-.footer { text-align: center; padding: 20px 0; display: flex; gap: 8px; justify-content: center; }
+.footer { text-align: center; padding: 20px 0; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.footer-info { width: 100%; font-size: 10px; color: #333; margin-top: 4px; }
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; animation: slideDown 0.3s ease, fadeOut 0.5s ease 2.5s; pointer-events: none; }
 .toast-dl { background: #0a1a2a; color: #60a5fa; border: 1px solid #1a3a5a; }
 .toast-iap { background: #0a2a0a; color: #4ade80; border: 1px solid #1a4a1a; }
@@ -115,6 +116,11 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
   </div>
 
   <div class="section">
+    <div class="section-title"><span>Revenue by currency</span></div>
+    <div id="revenueByCurrency"></div>
+  </div>
+
+  <div class="section">
     <div class="section-title"><span>Source breakdown</span></div>
     <div id="sourceBreakdown"></div>
   </div>
@@ -144,6 +150,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
   <div class="footer">
     <button class="btn-sm" onclick="loadData()">Refresh</button>
     <button class="btn-sm" onclick="logout()">Logout</button>
+    <div class="footer-info" id="rateInfo"></div>
   </div>
 </div>
 
@@ -154,6 +161,7 @@ var allEvents = [];
 var currentTime = 'all';
 var prevDownloads = -1;
 var prevRevenue = -1;
+var fxRates = {};
 
 function confetti() {
   var colors = ['#C8A45C','#4ade80','#60a5fa','#a78bfa','#f87171','#fbbf24','#e879f9'];
@@ -179,11 +187,35 @@ function showToast(msg, type) {
   setTimeout(function() { el.remove(); }, 3000);
 }
 
+function toUSD(price, currency) {
+  if (!price) return 0;
+  var amount = parseFloat(price);
+  if (!currency || currency === 'USD') return amount;
+  var rate = fxRates[currency];
+  if (!rate) return amount;
+  return amount / rate;
+}
+
+function loadFxRates() {
+  return fetch('https://api.frankfurter.dev/v1/latest?base=USD')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      fxRates = data.rates || {};
+      var d = document.getElementById('rateInfo');
+      if (d) d.textContent = 'FX rates: ' + data.date;
+    })
+    .catch(function() {
+      fxRates = { EUR: 0.92, GBP: 0.79, TRY: 38.5, BRL: 5.6, MXN: 19.5, INR: 85, IDR: 16200, CAD: 1.37, AUD: 1.55, JPY: 155 };
+    });
+}
+
 function login() {
   SECRET_KEY = document.getElementById('keyInput').value.trim();
   if (!SECRET_KEY) return;
   document.getElementById('loginError').textContent = '';
-  loadData().then(function(ok) {
+  loadFxRates().then(function() {
+    return loadData();
+  }).then(function(ok) {
     if (ok) {
       localStorage.setItem('sb_key_v3', SECRET_KEY);
       document.getElementById('loginView').style.display = 'none';
@@ -207,7 +239,9 @@ function init() {
   var saved = localStorage.getItem('sb_key_v3');
   if (saved) {
     SECRET_KEY = saved;
-    loadData().then(function(ok) {
+    loadFxRates().then(function() {
+      return loadData();
+    }).then(function(ok) {
       if (ok) {
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
@@ -239,8 +273,8 @@ function loadData() {
 function checkForNew() {
   var downloads = allEvents.filter(function(e) { return e.event === 'download'; }).length;
   var revenue = 0;
-  allEvents.filter(function(e) { return e.event === 'purchase' && e.source === 'inApp'; }).forEach(function(e) {
-    if (e.price) revenue += parseFloat(e.price);
+  allEvents.filter(function(e) { return e.event === 'purchase' && e.source !== 'offerCode'; }).forEach(function(e) {
+    revenue += toUSD(e.price, e.currency);
   });
   if (prevDownloads >= 0 && downloads > prevDownloads) {
     var n = downloads - prevDownloads;
@@ -255,7 +289,6 @@ function checkForNew() {
   prevRevenue = revenue;
 }
 
-// Inline delete for single event
 function showDeleteConfirm(id) {
   var cell = document.getElementById('del-' + id);
   if (!cell) return;
@@ -272,7 +305,6 @@ function doDelete(id) {
   }).then(function(res) { if (res.ok) loadData(); });
 }
 
-// Clear all with inline confirm
 function askClearAll() {
   var events = getFiltered();
   var ids = events.map(function(e) { return e.id; });
@@ -331,26 +363,27 @@ function render() {
 
   var downloads = events.filter(function(e) { return e.event === 'download'; });
   var purchases = events.filter(function(e) { return e.event === 'purchase'; });
-  var iapPurchases = purchases.filter(function(e) { return e.source === 'inApp'; });
+  var paidPurchases = purchases.filter(function(e) { return e.source !== 'offerCode'; });
   var offerPurchases = purchases.filter(function(e) { return e.source === 'offerCode'; });
 
   var todayAll = allEvents.filter(function(e) { return e.created_at && e.created_at.startsWith(today); });
   var todayDL = todayAll.filter(function(e) { return e.event === 'download'; }).length;
   var todayPR = todayAll.filter(function(e) { return e.event === 'purchase'; }).length;
 
-  var revenue = 0;
-  iapPurchases.forEach(function(e) { if (e.price) revenue += parseFloat(e.price); });
+  var revenueUSD = 0;
+  paidPurchases.forEach(function(e) { revenueUSD += toUSD(e.price, e.currency); });
 
   document.getElementById('totalDownloads').textContent = downloads.length;
   document.getElementById('todayDownloads').textContent = todayDL + ' today';
   document.getElementById('totalPurchases').textContent = purchases.length;
   document.getElementById('todayPurchases').textContent = todayPR + ' today';
-  document.getElementById('totalRevenue').textContent = '$' + revenue.toFixed(2);
-  document.getElementById('offerCount').textContent = offerPurchases.length + ' codes / ' + iapPurchases.length + ' paid';
+  document.getElementById('totalRevenue').textContent = '$' + revenueUSD.toFixed(2);
+  document.getElementById('offerCount').textContent = offerPurchases.length + ' codes / ' + paidPurchases.length + ' paid';
 
   var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
   document.getElementById('conversionRate').textContent = convRate + '%';
 
+  // Daily chart
   var days = [];
   for (var i = 6; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
   var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -368,11 +401,39 @@ function render() {
       + '<div class="chart-label">' + dn + '</div></div>';
   }).join('');
 
+  // Revenue by currency
+  var byCurrency = {};
+  paidPurchases.forEach(function(e) {
+    var c = e.currency || 'USD';
+    if (!byCurrency[c]) byCurrency[c] = { total: 0, count: 0 };
+    byCurrency[c].total += parseFloat(e.price || 0);
+    byCurrency[c].count++;
+  });
+  offerPurchases.forEach(function(e) {
+    var c = e.currency || 'CODE';
+    if (!byCurrency['FREE']) byCurrency['FREE'] = { total: 0, count: 0 };
+    byCurrency['FREE'].count++;
+  });
+  var currKeys = Object.keys(byCurrency).sort(function(a, b) { return byCurrency[b].total - byCurrency[a].total; });
+  var revHtml = '';
+  currKeys.forEach(function(c) {
+    var d = byCurrency[c];
+    var usdVal = c === 'FREE' ? 0 : (c === 'USD' ? d.total : d.total / (fxRates[c] || 1));
+    var displayVal = c === 'FREE' ? d.count + ' codes' : d.total.toFixed(2) + ' ' + c;
+    var usdLabel = c === 'FREE' || c === 'USD' ? '' : ' (~$' + usdVal.toFixed(2) + ')';
+    revHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #151515;">'
+      + '<span style="font-size:13px;color:#888;">' + (c === 'FREE' ? 'Offer codes' : c) + ' <span style="color:#555;">(' + d.count + ')</span></span>'
+      + '<span style="font-size:13px;font-weight:500;color:' + (c === 'FREE' ? '#C8A45C' : '#4ade80') + ';">' + displayVal + usdLabel + '</span></div>';
+  });
+  document.getElementById('revenueByCurrency').innerHTML = revHtml || '<div class="empty">No revenue yet</div>';
+
+  // Source breakdown
   var totalPurch = purchases.length || 1;
-  var srcHtml = makeBar('IAP', iapPurchases.length, totalPurch, '#4ade80');
+  var srcHtml = makeBar('Paid', paidPurchases.length, totalPurch, '#4ade80');
   srcHtml += makeBar('Code', offerPurchases.length, totalPurch, '#C8A45C');
   document.getElementById('sourceBreakdown').innerHTML = purchases.length > 0 ? srcHtml : '<div class="empty">No purchases yet</div>';
 
+  // Country bars
   var countries = {};
   events.forEach(function(e) { var l = (e.locale || '??').toUpperCase(); countries[l] = (countries[l] || 0) + 1; });
   var sortedC = Object.entries(countries).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
@@ -381,6 +442,7 @@ function render() {
     ? sortedC.map(function(c) { return makeBar(c[0], c[1], maxC, '#60a5fa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
+  // Device bars
   var devices = {};
   events.forEach(function(e) { var d = e.device || '??'; devices[d] = (devices[d] || 0) + 1; });
   var sortedD = Object.entries(devices).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 6);
@@ -389,6 +451,7 @@ function render() {
     ? sortedD.map(function(d) { return makeBar(d[0], d[1], maxD, '#a78bfa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
+  // Recent events
   var recent = events.slice(0, 30);
   document.getElementById('emptyState').style.display = recent.length === 0 ? 'block' : 'none';
   document.getElementById('eventsTable').innerHTML = recent.map(function(e) {
@@ -398,13 +461,20 @@ function render() {
       : e.source === 'offerCode' ? '<span class="badge badge-offer">offer code</span>'
       : '<span class="badge badge-iap">purchase</span>';
     var detail = '';
-    if (e.price) detail = e.price + ' ' + (e.currency || '');
-    else if (e.locale) detail = (e.locale).toUpperCase();
+    if (e.event === 'purchase' && e.price) {
+      var usd = toUSD(e.price, e.currency);
+      detail = e.price + ' ' + (e.currency || 'USD');
+      if (e.currency && e.currency !== 'USD') detail += ' ($' + usd.toFixed(2) + ')';
+    } else if (e.locale) {
+      detail = (e.locale).toUpperCase();
+    }
     return '<tr><td style="white-space:nowrap;font-size:11px;color:#666;">' + time + '</td><td>' + badge + '</td><td style="font-size:12px;color:#888;">' + detail + '</td><td id="del-' + e.id + '"><button class="btn-del" onclick="showDeleteConfirm(' + e.id + ')">✕</button></td></tr>';
   }).join('');
 }
 
 setInterval(function() { if (SECRET_KEY) loadData(); }, 60000);
+// Refresh FX rates every hour
+setInterval(function() { loadFxRates(); }, 3600000);
 init();
 </script>
 </body>
