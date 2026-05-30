@@ -430,6 +430,14 @@ function makeBar(label, value, max, color) {
     + '<div class="bar-value">' + value + '</div></div>';
 }
 
+function makeWideBar(label, value, max, color) {
+  var pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  return '<div class="bar-row">'
+    + '<div style="font-size:11px;color:#666;width:72px;text-align:right;flex-shrink:0;">' + label + '</div>'
+    + '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
+    + '<div class="bar-value">' + value + '</div></div>';
+}
+
 function buildChart(events) {
   var today = new Date().toISOString().slice(0, 10);
   var buckets = [];
@@ -576,7 +584,7 @@ function render() {
   var sortedD = Object.entries(devices).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 6);
   var maxD = sortedD.length > 0 ? sortedD[0][1] : 1;
   document.getElementById('deviceBars').innerHTML = sortedD.length > 0
-    ? sortedD.map(function(d) { return makeBar(d[0], d[1], maxD, '#a78bfa'); }).join('')
+    ? sortedD.map(function(d) { return makeWideBar(d[0], d[1], maxD, '#a78bfa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
   var recent = events.slice(0, 30);
