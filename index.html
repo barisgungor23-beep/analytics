@@ -18,7 +18,7 @@ h1 { font-size: 20px; font-weight: 500; margin-bottom: 24px; color: #C8A45C; }
 .blue { color: #60a5fa; }
 .purple { color: #a78bfa; }
 .section { background: #1a1a1a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-.section-title { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 12px; }
+.section-title { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font-size: 11px; color: #666; padding: 6px 0; border-bottom: 1px solid #222; font-weight: 500; }
 td { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
@@ -33,6 +33,14 @@ td { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
 .tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; background: #222; color: #888; border: none; }
 .tab.active { background: #C8A45C; color: #0a0a0a; }
 .error { color: #f87171; font-size: 13px; margin-top: 8px; }
+.btn-sm { background: none; border: 1px solid #333; color: #888; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+.btn-sm:hover { border-color: #555; color: #ccc; }
+.btn-del { background: none; border: none; color: #555; cursor: pointer; font-size: 14px; padding: 2px 6px; }
+.btn-del:hover { color: #f87171; }
+.btn-danger { background: none; border: 1px solid #7f1d1d; color: #f87171; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+.btn-danger:hover { background: #7f1d1d; color: #fecaca; }
+.confirm-bar { background: #1a1a1a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.confirm-bar span { font-size: 13px; color: #f87171; }
 </style>
 </head>
 <body>
@@ -46,6 +54,14 @@ td { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
 
 <div id="dashboard" style="display:none;">
   <h1>Indie Analytics</h1>
+
+  <div id="confirmBar" class="confirm-bar" style="display:none;">
+    <span id="confirmText"></span>
+    <div>
+      <button class="btn-sm" onclick="cancelDelete()">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()" style="margin-left:8px;">Delete</button>
+    </div>
+  </div>
 
   <div class="tabs" id="appTabs">
     <button class="tab active" onclick="filterApp('all', this)">All</button>
@@ -78,7 +94,9 @@ td { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
   </div>
 
   <div class="section">
-    <div class="section-title">Downloads by country</div>
+    <div class="section-title">
+      <span>Downloads by country</span>
+    </div>
     <table>
       <thead><tr><th>Country</th><th>Downloads</th><th>Purchases</th></tr></thead>
       <tbody id="countryTable"></tbody>
@@ -86,16 +104,19 @@ td { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
   </div>
 
   <div class="section">
-    <div class="section-title">Recent events</div>
+    <div class="section-title">
+      <span>Recent events</span>
+      <button class="btn-danger" onclick="askDeleteAll()">Clear all</button>
+    </div>
     <table>
-      <thead><tr><th>Time</th><th>Event</th><th>Source</th><th>Locale</th></tr></thead>
+      <thead><tr><th>Time</th><th>Event</th><th>Source</th><th>Locale</th><th></th></tr></thead>
       <tbody id="eventsTable"></tbody>
     </table>
   </div>
 
   <div style="text-align:center;padding:20px;">
-    <button onclick="loadData()" style="background:none;border:1px solid #333;color:#888;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;">Refresh</button>
-    <button onclick="logout()" style="background:none;border:1px solid #333;color:#666;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;margin-left:8px;">Logout</button>
+    <button class="btn-sm" onclick="loadData()">Refresh</button>
+    <button class="btn-sm" onclick="logout()" style="margin-left:8px;">Logout</button>
   </div>
 </div>
 
@@ -104,6 +125,8 @@ var SUPABASE_URL = 'https://vpsmaqsessodayyjamnd.supabase.co';
 var SECRET_KEY = '';
 var allEvents = [];
 var currentApp = 'all';
+var pendingDeleteIds = [];
+var pendingDeleteAll = false;
 
 function login() {
   SECRET_KEY = document.getElementById('keyInput').value.trim();
@@ -144,10 +167,7 @@ function init() {
 
 function loadData() {
   return fetch(SUPABASE_URL + '/rest/v1/events?select=*&order=created_at.desc&limit=5000', {
-    headers: {
-      'apikey': SECRET_KEY,
-      'Authorization': 'Bearer ' + SECRET_KEY
-    }
+    headers: { 'apikey': SECRET_KEY, 'Authorization': 'Bearer ' + SECRET_KEY }
   }).then(function(res) {
     if (!res.ok) {
       document.getElementById('loginError').textContent = 'Invalid key or API error (HTTP ' + res.status + ')';
@@ -164,11 +184,54 @@ function loadData() {
   });
 }
 
+function deleteEvent(id) {
+  pendingDeleteIds = [id];
+  pendingDeleteAll = false;
+  document.getElementById('confirmText').textContent = 'Delete this event?';
+  document.getElementById('confirmBar').style.display = 'flex';
+}
+
+function askDeleteAll() {
+  var events = currentApp === 'all' ? allEvents : allEvents.filter(function(e) { return e.app === currentApp; });
+  pendingDeleteIds = events.map(function(e) { return e.id; });
+  pendingDeleteAll = true;
+  var label = currentApp === 'all' ? 'all ' + events.length + ' events' : events.length + ' ' + currentApp + ' events';
+  document.getElementById('confirmText').textContent = 'Delete ' + label + '?';
+  document.getElementById('confirmBar').style.display = 'flex';
+}
+
+function cancelDelete() {
+  pendingDeleteIds = [];
+  pendingDeleteAll = false;
+  document.getElementById('confirmBar').style.display = 'none';
+}
+
+function confirmDelete() {
+  if (pendingDeleteIds.length === 0) return;
+
+  var filter = pendingDeleteAll && currentApp !== 'all'
+    ? '?app=eq.' + currentApp
+    : pendingDeleteIds.length === 1
+      ? '?id=eq.' + pendingDeleteIds[0]
+      : '?id=in.(' + pendingDeleteIds.join(',') + ')';
+
+  fetch(SUPABASE_URL + '/rest/v1/events' + filter, {
+    method: 'DELETE',
+    headers: { 'apikey': SECRET_KEY, 'Authorization': 'Bearer ' + SECRET_KEY }
+  }).then(function(res) {
+    if (res.ok) {
+      cancelDelete();
+      loadData();
+    }
+  });
+}
+
 function filterApp(app, btn) {
   currentApp = app;
   var tabs = document.querySelectorAll('.tab');
   for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
   btn.classList.add('active');
+  cancelDelete();
   render();
 }
 
@@ -220,7 +283,8 @@ function render() {
       : e.source === 'offerCode' ? '<span class="badge badge-offer">offer code</span>'
       : '<span class="badge badge-iap">purchase</span>';
     var price = e.price ? e.price + ' ' + (e.currency || '') : '';
-    return '<tr><td>' + time + '</td><td>' + badge + '</td><td>' + (price || e.source || '-') + '</td><td>' + (e.locale || '??').toUpperCase() + '</td></tr>';
+    var del = '<button class="btn-del" onclick="deleteEvent(' + e.id + ')">✕</button>';
+    return '<tr><td>' + time + '</td><td>' + badge + '</td><td>' + (price || e.source || '-') + '</td><td>' + (e.locale || '??').toUpperCase() + '</td><td>' + del + '</td></tr>';
   }).join('');
 }
 
