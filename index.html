@@ -50,10 +50,10 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 .bar-value { font-size: 11px; color: #888; width: 28px; }
 .chart-section { margin-bottom: 12px; }
-.chart-bars { display: flex; align-items: flex-end; gap: 3px; height: 80px; padding-top: 4px; }
-.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%; justify-content: flex-end; }
+.chart-bars { display: flex; align-items: flex-end; gap: 2px; height: 80px; padding-top: 4px; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%; justify-content: flex-end; min-width: 0; }
 .chart-bar { width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; transition: height 0.3s; }
-.chart-label { font-size: 8px; color: #444; }
+.chart-label { font-size: 7px; color: #444; white-space: nowrap; overflow: hidden; }
 .empty { text-align: center; padding: 24px; color: #333; font-size: 13px; }
 .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; margin-right: 6px; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -66,6 +66,8 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 @keyframes fadeOut { to { opacity: 0; } }
 .confetti { position: fixed; top: -10px; width: 8px; height: 8px; z-index: 9998; pointer-events: none; border-radius: 2px; }
 @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #151515; }
+.stat-row:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -81,10 +83,10 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
   <h1><span class="live-dot"></span>PersonalCapsule</h1>
 
   <div class="time-tabs">
-    <button class="time-tab active" onclick="filterTime('all', this)">All</button>
     <button class="time-tab" onclick="filterTime('today', this)">Today</button>
     <button class="time-tab" onclick="filterTime('7d', this)">7d</button>
     <button class="time-tab" onclick="filterTime('30d', this)">30d</button>
+    <button class="time-tab active" onclick="filterTime('lifetime', this)">Lifetime</button>
   </div>
 
   <div class="grid">
@@ -111,8 +113,8 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
   </div>
 
   <div class="section chart-section">
-    <div class="section-title"><span>Last 7 days</span></div>
-    <div class="chart-bars" id="dailyChart"></div>
+    <div class="section-title"><span id="chartTitle">Activity</span></div>
+    <div class="chart-bars" id="dynamicChart"></div>
   </div>
 
   <div class="section">
@@ -158,7 +160,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 var SUPABASE_URL = 'https://vpsmaqsessodayyjamnd.supabase.co';
 var SECRET_KEY = '';
 var allEvents = [];
-var currentTime = 'all';
+var currentTime = 'lifetime';
 var prevDownloads = -1;
 var prevRevenue = -1;
 var fxRates = {};
@@ -213,9 +215,7 @@ function login() {
   SECRET_KEY = document.getElementById('keyInput').value.trim();
   if (!SECRET_KEY) return;
   document.getElementById('loginError').textContent = '';
-  loadFxRates().then(function() {
-    return loadData();
-  }).then(function(ok) {
+  loadFxRates().then(function() { return loadData(); }).then(function(ok) {
     if (ok) {
       localStorage.setItem('sb_key_v3', SECRET_KEY);
       document.getElementById('loginView').style.display = 'none';
@@ -239,9 +239,7 @@ function init() {
   var saved = localStorage.getItem('sb_key_v3');
   if (saved) {
     SECRET_KEY = saved;
-    loadFxRates().then(function() {
-      return loadData();
-    }).then(function(ok) {
+    loadFxRates().then(function() { return loadData(); }).then(function(ok) {
       if (ok) {
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
@@ -294,8 +292,7 @@ function showDeleteConfirm(id) {
   if (!cell) return;
   cell.innerHTML = '<div class="inline-confirm">'
     + '<button class="btn-cancel" onclick="render()">No</button>'
-    + '<button class="btn-confirm-del" onclick="doDelete(' + id + ')">Yes</button>'
-    + '</div>';
+    + '<button class="btn-confirm-del" onclick="doDelete(' + id + ')">Yes</button></div>';
 }
 
 function doDelete(id) {
@@ -307,13 +304,11 @@ function doDelete(id) {
 
 function askClearAll() {
   var events = getFiltered();
-  var ids = events.map(function(e) { return e.id; });
-  if (ids.length === 0) return;
+  if (events.length === 0) return;
   document.getElementById('clearAllBtn').innerHTML = '<span class="clear-confirm">'
-    + '<span style="font-size:11px;color:#f87171;">' + ids.length + ' events?</span>'
+    + '<span style="font-size:11px;color:#f87171;">' + events.length + '?</span>'
     + '<button class="btn-cancel" onclick="cancelClearAll()">No</button>'
-    + '<button class="btn-confirm-del" onclick="doClearAll()">Yes</button>'
-    + '</span>';
+    + '<button class="btn-confirm-del" onclick="doClearAll()">Yes</button></span>';
 }
 
 function cancelClearAll() {
@@ -321,8 +316,7 @@ function cancelClearAll() {
 }
 
 function doClearAll() {
-  var events = getFiltered();
-  var ids = events.map(function(e) { return e.id; });
+  var ids = getFiltered().map(function(e) { return e.id; });
   if (ids.length === 0) return;
   fetch(SUPABASE_URL + '/rest/v1/events?id=in.(' + ids.join(',') + ')', {
     method: 'DELETE',
@@ -339,14 +333,13 @@ function filterTime(t, btn) {
 }
 
 function getFiltered() {
-  var events = allEvents;
-  if (currentTime === 'all') return events;
+  if (currentTime === 'lifetime') return allEvents;
   var now = new Date();
   var cutoff;
   if (currentTime === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   else if (currentTime === '7d') cutoff = new Date(now - 7 * 86400000);
   else if (currentTime === '30d') cutoff = new Date(now - 30 * 86400000);
-  return events.filter(function(e) { return new Date(e.created_at) >= cutoff; });
+  return allEvents.filter(function(e) { return new Date(e.created_at) >= cutoff; });
 }
 
 function makeBar(label, value, max, color) {
@@ -355,6 +348,72 @@ function makeBar(label, value, max, color) {
     + '<div class="bar-label">' + label + '</div>'
     + '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
     + '<div class="bar-value">' + value + '</div></div>';
+}
+
+function buildChart(events) {
+  var today = new Date().toISOString().slice(0, 10);
+  var buckets = [];
+  var labels = [];
+  var title = '';
+
+  if (currentTime === 'today') {
+    title = 'Today by hour';
+    for (var h = 0; h < 24; h++) {
+      var hh = h.toString().padStart(2, '0');
+      buckets.push(events.filter(function(e) {
+        return e.created_at && e.created_at.startsWith(today + 'T' + hh);
+      }).length);
+      labels.push(h % 6 === 0 ? hh + ':00' : '');
+    }
+  } else if (currentTime === '7d') {
+    title = 'Last 7 days';
+    var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(Date.now() - i * 86400000);
+      var ds = d.toISOString().slice(0, 10);
+      buckets.push(events.filter(function(e) { return e.created_at && e.created_at.startsWith(ds); }).length);
+      labels.push(dayNames[d.getDay()]);
+    }
+  } else if (currentTime === '30d') {
+    title = 'Last 30 days';
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date(Date.now() - i * 86400000);
+      var ds = d.toISOString().slice(0, 10);
+      buckets.push(events.filter(function(e) { return e.created_at && e.created_at.startsWith(ds); }).length);
+      labels.push(i % 7 === 0 ? d.getDate() + '/' + (d.getMonth() + 1) : '');
+    }
+  } else {
+    title = 'All time (weekly)';
+    if (events.length === 0) { return { title: title, html: '<div class="empty">No data yet</div>' }; }
+    var sorted = events.slice().sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
+    var first = new Date(sorted[0].created_at);
+    var now = new Date();
+    var weeks = Math.ceil((now - first) / (7 * 86400000)) || 1;
+    if (weeks > 52) weeks = 52;
+    for (var w = weeks - 1; w >= 0; w--) {
+      var wStart = new Date(now - (w + 1) * 7 * 86400000);
+      var wEnd = new Date(now - w * 7 * 86400000);
+      buckets.push(events.filter(function(e) {
+        var d = new Date(e.created_at);
+        return d >= wStart && d < wEnd;
+      }).length);
+      var label = (wStart.getDate()) + '/' + (wStart.getMonth() + 1);
+      labels.push(weeks <= 12 ? label : (w % 4 === 0 ? label : ''));
+    }
+  }
+
+  var max = Math.max.apply(null, buckets) || 1;
+  var html = buckets.map(function(count, idx) {
+    var h = Math.max(2, Math.round((count / max) * 70));
+    var isLast = idx === buckets.length - 1;
+    var color = isLast ? '#C8A45C' : '#60a5fa';
+    return '<div class="chart-bar-wrap">'
+      + '<div style="font-size:8px;color:#888;">' + (count > 0 ? count : '') + '</div>'
+      + '<div class="chart-bar" style="height:' + h + 'px;background:' + color + '"></div>'
+      + '<div class="chart-label">' + labels[idx] + '</div></div>';
+  }).join('');
+
+  return { title: title, html: html };
 }
 
 function render() {
@@ -383,23 +442,10 @@ function render() {
   var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
   document.getElementById('conversionRate').textContent = convRate + '%';
 
-  // Daily chart
-  var days = [];
-  for (var i = 6; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
-  var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var dayCounts = days.map(function(day) {
-    return allEvents.filter(function(e) { return e.created_at && e.created_at.startsWith(day); }).length;
-  });
-  var maxDay = Math.max.apply(null, dayCounts) || 1;
-  document.getElementById('dailyChart').innerHTML = days.map(function(day, idx) {
-    var h = Math.max(2, Math.round((dayCounts[idx] / maxDay) * 70));
-    var dn = dayNames[new Date(day).getDay()];
-    var color = day === today ? '#C8A45C' : '#60a5fa';
-    return '<div class="chart-bar-wrap">'
-      + '<div style="font-size:9px;color:#888;">' + (dayCounts[idx] > 0 ? dayCounts[idx] : '') + '</div>'
-      + '<div class="chart-bar" style="height:' + h + 'px;background:' + color + '"></div>'
-      + '<div class="chart-label">' + dn + '</div></div>';
-  }).join('');
+  // Dynamic chart
+  var chart = buildChart(events);
+  document.getElementById('chartTitle').textContent = chart.title;
+  document.getElementById('dynamicChart').innerHTML = chart.html;
 
   // Revenue by currency
   var byCurrency = {};
@@ -409,19 +455,16 @@ function render() {
     byCurrency[c].total += parseFloat(e.price || 0);
     byCurrency[c].count++;
   });
-  offerPurchases.forEach(function(e) {
-    var c = e.currency || 'CODE';
-    if (!byCurrency['FREE']) byCurrency['FREE'] = { total: 0, count: 0 };
-    byCurrency['FREE'].count++;
-  });
+  if (offerPurchases.length > 0) {
+    byCurrency['FREE'] = { total: 0, count: offerPurchases.length };
+  }
   var currKeys = Object.keys(byCurrency).sort(function(a, b) { return byCurrency[b].total - byCurrency[a].total; });
   var revHtml = '';
   currKeys.forEach(function(c) {
     var d = byCurrency[c];
-    var usdVal = c === 'FREE' ? 0 : (c === 'USD' ? d.total : d.total / (fxRates[c] || 1));
     var displayVal = c === 'FREE' ? d.count + ' codes' : d.total.toFixed(2) + ' ' + c;
-    var usdLabel = c === 'FREE' || c === 'USD' ? '' : ' (~$' + usdVal.toFixed(2) + ')';
-    revHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #151515;">'
+    var usdLabel = (c === 'FREE' || c === 'USD') ? '' : ' (~$' + (d.total / (fxRates[c] || 1)).toFixed(2) + ')';
+    revHtml += '<div class="stat-row">'
       + '<span style="font-size:13px;color:#888;">' + (c === 'FREE' ? 'Offer codes' : c) + ' <span style="color:#555;">(' + d.count + ')</span></span>'
       + '<span style="font-size:13px;font-weight:500;color:' + (c === 'FREE' ? '#C8A45C' : '#4ade80') + ';">' + displayVal + usdLabel + '</span></div>';
   });
@@ -473,7 +516,6 @@ function render() {
 }
 
 setInterval(function() { if (SECRET_KEY) loadData(); }, 60000);
-// Refresh FX rates every hour
 setInterval(function() { loadFxRates(); }, 3600000);
 init();
 </script>
