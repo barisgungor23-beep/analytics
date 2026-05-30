@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indie Analytics</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 20px; }
+h1 { font-size: 20px; font-weight: 500; margin-bottom: 24px; color: #C8A45C; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+.card { background: #1a1a1a; border-radius: 12px; padding: 16px; }
+.card-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+.card-value { font-size: 28px; font-weight: 600; }
+.card-sub { font-size: 11px; color: #666; margin-top: 2px; }
+.gold { color: #C8A45C; }
+.green { color: #4ade80; }
+.blue { color: #60a5fa; }
+.purple { color: #a78bfa; }
+.section { background: #1a1a1a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.section-title { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; color: #666; padding: 6px 0; border-bottom: 1px solid #222; font-weight: 500; }
+td { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 6px; }
+.badge-iap { background: #1a3a1a; color: #4ade80; }
+.badge-offer { background: #3a2a1a; color: #C8A45C; }
+.badge-dl { background: #1a2a3a; color: #60a5fa; }
+.login-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 16px; }
+.login-wrap input { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 16px; color: #e5e5e5; font-size: 14px; width: 280px; text-align: center; }
+.login-wrap button { background: #C8A45C; color: #0a0a0a; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; background: #222; color: #888; border: none; }
+.tab.active { background: #C8A45C; color: #0a0a0a; }
+#loading { text-align: center; padding: 40px; color: #666; }
+.chart-wrap { height: 200px; position: relative; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="login-wrap" id="loginView">
+    <h1>🔒 Indie Analytics</h1>
+    <input type="password" id="keyInput" placeholder="Enter secret key" />
+    <button onclick="login()">Unlock</button>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <h1>Indie Analytics</h1>
+
+    <div class="tabs" id="appTabs">
+      <button class="tab active" onclick="filterApp('all')">All</button>
+      <button class="tab" onclick="filterApp('personalcapsule')">PersonalCapsule</button>
+      <button class="tab" onclick="filterApp('yula')">Yula</button>
+      <button class="tab" onclick="filterApp('appconsol')">AppConsol</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">Total downloads</div>
+        <div class="card-value blue" id="totalDownloads">-</div>
+        <div class="card-sub" id="todayDownloads"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total purchases</div>
+        <div class="card-value green" id="totalPurchases">-</div>
+        <div class="card-sub" id="todayPurchases"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Revenue</div>
+        <div class="card-value gold" id="totalRevenue">-</div>
+        <div class="card-sub" id="offerCount"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Conversion</div>
+        <div class="card-value purple" id="conversionRate">-</div>
+        <div class="card-sub">purchases / downloads</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Downloads by country</div>
+      <table>
+        <thead><tr><th>Country</th><th>Downloads</th><th>Purchases</th></tr></thead>
+        <tbody id="countryTable"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Recent events</div>
+      <table>
+        <thead><tr><th>Time</th><th>Event</th><th>Source</th><th>Locale</th></tr></thead>
+        <tbody id="eventsTable"></tbody>
+      </table>
+    </div>
+
+    <div style="text-align:center;padding:20px;color:#444;font-size:11px;">
+      <button onclick="loadData()" style="background:none;border:1px solid #333;color:#888;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;">↻ Refresh</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vpsmaqsessodayyjamnd.supabase.co';
+let SECRET_KEY = '';
+let allEvents = [];
+let currentApp = 'all';
+
+function login() {
+  SECRET_KEY = document.getElementById('keyInput').value.trim();
+  if (!SECRET_KEY) return;
+  localStorage.setItem('sb_key', SECRET_KEY);
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+window.onload = function() {
+  const saved = localStorage.getItem('sb_key');
+  if (saved) {
+    SECRET_KEY = saved;
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  }
+};
+
+async function loadData() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/events?select=*&order=created_at.desc&limit=5000`, {
+      headers: {
+        'apikey': SECRET_KEY,
+        'Authorization': `Bearer ${SECRET_KEY}`
+      }
+    });
+    if (!res.ok) { alert('Invalid key or API error'); return; }
+    allEvents = await res.json();
+    render();
+  } catch (e) {
+    alert('Connection error: ' + e.message);
+  }
+}
+
+function filterApp(app) {
+  currentApp = app;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function render() {
+  const events = currentApp === 'all' ? allEvents : allEvents.filter(e => e.app === currentApp);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const downloads = events.filter(e => e.event === 'download');
+  const purchases = events.filter(e => e.event === 'purchase');
+  const iapPurchases = purchases.filter(e => e.source === 'inApp');
+  const offerPurchases = purchases.filter(e => e.source === 'offerCode');
+
+  const todayDL = downloads.filter(e => e.created_at?.startsWith(today)).length;
+  const todayPR = purchases.filter(e => e.created_at?.startsWith(today)).length;
+
+  // Revenue calculation
+  let revenue = 0;
+  iapPurchases.forEach(e => {
+    if (e.price) revenue += parseFloat(e.price);
+  });
+
+  document.getElementById('totalDownloads').textContent = downloads.length;
+  document.getElementById('todayDownloads').textContent = `${todayDL} today`;
+  document.getElementById('totalPurchases').textContent = purchases.length;
+  document.getElementById('todayPurchases').textContent = `${todayPR} today`;
+  document.getElementById('totalRevenue').textContent = `$${revenue.toFixed(2)}`;
+  document.getElementById('offerCount').textContent = `${offerPurchases.length} offer codes`;
+  
+  const convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
+  document.getElementById('conversionRate').textContent = `${convRate}%`;
+
+  // Country table
+  const countries = {};
+  events.forEach(e => {
+    const loc = e.locale || '??';
+    if (!countries[loc]) countries[loc] = { dl: 0, pr: 0 };
+    if (e.event === 'download') countries[loc].dl++;
+    if (e.event === 'purchase') countries[loc].pr++;
+  });
+
+  const sorted = Object.entries(countries).sort((a, b) => (b[1].dl + b[1].pr) - (a[1].dl + a[1].pr));
+  document.getElementById('countryTable').innerHTML = sorted.map(([loc, data]) =>
+    `<tr><td>${loc.toUpperCase()}</td><td>${data.dl}</td><td>${data.pr}</td></tr>`
+  ).join('');
+
+  // Recent events (last 20)
+  const recent = events.slice(0, 20);
+  document.getElementById('eventsTable').innerHTML = recent.map(e => {
+    const time = new Date(e.created_at).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
+    const badge = e.event === 'download' ? '<span class="badge badge-dl">download</span>'
+      : e.source === 'offerCode' ? '<span class="badge badge-offer">offer code</span>'
+      : '<span class="badge badge-iap">purchase</span>';
+    const price = e.price ? `${e.price} ${e.currency || ''}` : '';
+    return `<tr><td>${time}</td><td>${badge}</td><td>${price || e.source || '-'}</td><td>${(e.locale || '??').toUpperCase()}</td></tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
