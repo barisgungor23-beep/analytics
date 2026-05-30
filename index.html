@@ -40,8 +40,10 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 .btn-del { background: none; border: none; color: #333; cursor: pointer; font-size: 16px; padding: 4px 8px; }
 .btn-del:hover { color: #f87171; }
 .btn-danger { background: none; border: 1px solid #7f1d1d; color: #f87171; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 500; }
-.confirm-bar { background: #1a0a0a; border: 1px solid #7f1d1d; border-radius: 12px; padding: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.confirm-bar span { font-size: 13px; color: #f87171; }
+.btn-cancel { background: none; border: 1px solid #333; color: #888; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 10px; }
+.btn-confirm-del { background: #7f1d1d; border: none; color: #fecaca; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: 600; }
+.inline-confirm { display: flex; gap: 4px; align-items: center; }
+.clear-confirm { display: inline-flex; gap: 6px; align-items: center; }
 .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .bar-label { font-size: 11px; color: #666; width: 32px; text-align: right; }
 .bar-track { flex: 1; height: 6px; background: #111; border-radius: 3px; overflow: hidden; }
@@ -76,14 +78,6 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 
 <div id="dashboard" style="display:none;">
   <h1><span class="live-dot"></span>PersonalCapsule</h1>
-
-  <div id="confirmBar" class="confirm-bar" style="display:none;">
-    <span id="confirmText"></span>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-sm" onclick="cancelDelete()">Cancel</button>
-      <button class="btn-danger" onclick="confirmDelete()">Delete</button>
-    </div>
-  </div>
 
   <div class="time-tabs">
     <button class="time-tab active" onclick="filterTime('all', this)">All</button>
@@ -138,7 +132,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
   <div class="section">
     <div class="section-title">
       <span>Recent events</span>
-      <button class="btn-danger" onclick="askDeleteAll()">Clear all</button>
+      <span id="clearAllBtn"><button class="btn-danger" onclick="askClearAll()">Clear all</button></span>
     </div>
     <table>
       <thead><tr><th>Time</th><th>Event</th><th>Detail</th><th></th></tr></thead>
@@ -158,8 +152,6 @@ var SUPABASE_URL = 'https://vpsmaqsessodayyjamnd.supabase.co';
 var SECRET_KEY = '';
 var allEvents = [];
 var currentTime = 'all';
-var pendingDeleteIds = [];
-var pendingDeleteAll = false;
 var prevDownloads = -1;
 var prevRevenue = -1;
 
@@ -250,53 +242,60 @@ function checkForNew() {
   allEvents.filter(function(e) { return e.event === 'purchase' && e.source === 'inApp'; }).forEach(function(e) {
     if (e.price) revenue += parseFloat(e.price);
   });
-
   if (prevDownloads >= 0 && downloads > prevDownloads) {
-    var newDL = downloads - prevDownloads;
-    showToast('+ ' + newDL + ' new download' + (newDL > 1 ? 's' : '') + '!', 'dl');
+    var n = downloads - prevDownloads;
+    showToast('+ ' + n + ' new download' + (n > 1 ? 's' : '') + '!', 'dl');
     confetti();
   }
-
   if (prevRevenue >= 0 && revenue > prevRevenue) {
-    var newRev = (revenue - prevRevenue).toFixed(2);
-    showToast('+ $' + newRev + ' revenue!', 'iap');
+    showToast('+ $' + (revenue - prevRevenue).toFixed(2) + ' revenue!', 'iap');
     confetti();
   }
-
   prevDownloads = downloads;
   prevRevenue = revenue;
 }
 
-function deleteEvent(id) {
-  pendingDeleteIds = [id];
-  pendingDeleteAll = false;
-  document.getElementById('confirmText').textContent = 'Delete this event?';
-  document.getElementById('confirmBar').style.display = 'flex';
+// Inline delete for single event
+function showDeleteConfirm(id) {
+  var cell = document.getElementById('del-' + id);
+  if (!cell) return;
+  cell.innerHTML = '<div class="inline-confirm">'
+    + '<button class="btn-cancel" onclick="render()">No</button>'
+    + '<button class="btn-confirm-del" onclick="doDelete(' + id + ')">Yes</button>'
+    + '</div>';
 }
 
-function askDeleteAll() {
-  var events = getFiltered();
-  pendingDeleteIds = events.map(function(e) { return e.id; });
-  pendingDeleteAll = true;
-  document.getElementById('confirmText').textContent = 'Delete ' + events.length + ' events?';
-  document.getElementById('confirmBar').style.display = 'flex';
-}
-
-function cancelDelete() {
-  pendingDeleteIds = [];
-  pendingDeleteAll = false;
-  document.getElementById('confirmBar').style.display = 'none';
-}
-
-function confirmDelete() {
-  if (pendingDeleteIds.length === 0) return;
-  var filter = pendingDeleteIds.length === 1
-    ? '?id=eq.' + pendingDeleteIds[0]
-    : '?id=in.(' + pendingDeleteIds.join(',') + ')';
-  fetch(SUPABASE_URL + '/rest/v1/events' + filter, {
+function doDelete(id) {
+  fetch(SUPABASE_URL + '/rest/v1/events?id=eq.' + id, {
     method: 'DELETE',
     headers: { 'apikey': SECRET_KEY, 'Authorization': 'Bearer ' + SECRET_KEY }
-  }).then(function(res) { if (res.ok) { cancelDelete(); loadData(); } });
+  }).then(function(res) { if (res.ok) loadData(); });
+}
+
+// Clear all with inline confirm
+function askClearAll() {
+  var events = getFiltered();
+  var ids = events.map(function(e) { return e.id; });
+  if (ids.length === 0) return;
+  document.getElementById('clearAllBtn').innerHTML = '<span class="clear-confirm">'
+    + '<span style="font-size:11px;color:#f87171;">' + ids.length + ' events?</span>'
+    + '<button class="btn-cancel" onclick="cancelClearAll()">No</button>'
+    + '<button class="btn-confirm-del" onclick="doClearAll()">Yes</button>'
+    + '</span>';
+}
+
+function cancelClearAll() {
+  document.getElementById('clearAllBtn').innerHTML = '<button class="btn-danger" onclick="askClearAll()">Clear all</button>';
+}
+
+function doClearAll() {
+  var events = getFiltered();
+  var ids = events.map(function(e) { return e.id; });
+  if (ids.length === 0) return;
+  fetch(SUPABASE_URL + '/rest/v1/events?id=in.(' + ids.join(',') + ')', {
+    method: 'DELETE',
+    headers: { 'apikey': SECRET_KEY, 'Authorization': 'Bearer ' + SECRET_KEY }
+  }).then(function(res) { if (res.ok) { cancelClearAll(); loadData(); } });
 }
 
 function filterTime(t, btn) {
@@ -312,9 +311,9 @@ function getFiltered() {
   if (currentTime === 'all') return events;
   var now = new Date();
   var cutoff;
-  if (currentTime === 'today') { cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
-  else if (currentTime === '7d') { cutoff = new Date(now - 7 * 86400000); }
-  else if (currentTime === '30d') { cutoff = new Date(now - 30 * 86400000); }
+  if (currentTime === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  else if (currentTime === '7d') cutoff = new Date(now - 7 * 86400000);
+  else if (currentTime === '30d') cutoff = new Date(now - 30 * 86400000);
   return events.filter(function(e) { return new Date(e.created_at) >= cutoff; });
 }
 
@@ -352,62 +351,44 @@ function render() {
   var convRate = downloads.length > 0 ? ((purchases.length / downloads.length) * 100).toFixed(1) : '0';
   document.getElementById('conversionRate').textContent = convRate + '%';
 
-  // Daily chart
   var days = [];
-  for (var i = 6; i >= 0; i--) {
-    var d = new Date(Date.now() - i * 86400000);
-    days.push(d.toISOString().slice(0, 10));
-  }
+  for (var i = 6; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
   var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var dayCounts = days.map(function(day) {
     return allEvents.filter(function(e) { return e.created_at && e.created_at.startsWith(day); }).length;
   });
   var maxDay = Math.max.apply(null, dayCounts) || 1;
-
   document.getElementById('dailyChart').innerHTML = days.map(function(day, idx) {
     var h = Math.max(2, Math.round((dayCounts[idx] / maxDay) * 70));
     var dn = dayNames[new Date(day).getDay()];
-    var isToday = day === today;
-    var color = isToday ? '#C8A45C' : '#60a5fa';
+    var color = day === today ? '#C8A45C' : '#60a5fa';
     return '<div class="chart-bar-wrap">'
       + '<div style="font-size:9px;color:#888;">' + (dayCounts[idx] > 0 ? dayCounts[idx] : '') + '</div>'
       + '<div class="chart-bar" style="height:' + h + 'px;background:' + color + '"></div>'
       + '<div class="chart-label">' + dn + '</div></div>';
   }).join('');
 
-  // Source breakdown
   var totalPurch = purchases.length || 1;
   var srcHtml = makeBar('IAP', iapPurchases.length, totalPurch, '#4ade80');
   srcHtml += makeBar('Code', offerPurchases.length, totalPurch, '#C8A45C');
   document.getElementById('sourceBreakdown').innerHTML = purchases.length > 0 ? srcHtml : '<div class="empty">No purchases yet</div>';
 
-  // Country bars
   var countries = {};
-  events.forEach(function(e) {
-    var loc = (e.locale || '??').toUpperCase();
-    if (!countries[loc]) countries[loc] = 0;
-    countries[loc]++;
-  });
+  events.forEach(function(e) { var l = (e.locale || '??').toUpperCase(); countries[l] = (countries[l] || 0) + 1; });
   var sortedC = Object.entries(countries).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
   var maxC = sortedC.length > 0 ? sortedC[0][1] : 1;
   document.getElementById('countryBars').innerHTML = sortedC.length > 0
     ? sortedC.map(function(c) { return makeBar(c[0], c[1], maxC, '#60a5fa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
-  // Device bars
   var devices = {};
-  events.forEach(function(e) {
-    var dev = e.device || '??';
-    if (!devices[dev]) devices[dev] = 0;
-    devices[dev]++;
-  });
+  events.forEach(function(e) { var d = e.device || '??'; devices[d] = (devices[d] || 0) + 1; });
   var sortedD = Object.entries(devices).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 6);
   var maxD = sortedD.length > 0 ? sortedD[0][1] : 1;
   document.getElementById('deviceBars').innerHTML = sortedD.length > 0
     ? sortedD.map(function(d) { return makeBar(d[0], d[1], maxD, '#a78bfa'); }).join('')
     : '<div class="empty">No data yet</div>';
 
-  // Recent events
   var recent = events.slice(0, 30);
   document.getElementById('emptyState').style.display = recent.length === 0 ? 'block' : 'none';
   document.getElementById('eventsTable').innerHTML = recent.map(function(e) {
@@ -419,13 +400,11 @@ function render() {
     var detail = '';
     if (e.price) detail = e.price + ' ' + (e.currency || '');
     else if (e.locale) detail = (e.locale).toUpperCase();
-    var del = '<button class="btn-del" onclick="deleteEvent(' + e.id + ')">✕</button>';
-    return '<tr><td style="white-space:nowrap;font-size:11px;color:#666;">' + time + '</td><td>' + badge + '</td><td style="font-size:12px;color:#888;">' + detail + '</td><td>' + del + '</td></tr>';
+    return '<tr><td style="white-space:nowrap;font-size:11px;color:#666;">' + time + '</td><td>' + badge + '</td><td style="font-size:12px;color:#888;">' + detail + '</td><td id="del-' + e.id + '"><button class="btn-del" onclick="showDeleteConfirm(' + e.id + ')">✕</button></td></tr>';
   }).join('');
 }
 
 setInterval(function() { if (SECRET_KEY) loadData(); }, 60000);
-
 init();
 </script>
 </body>
