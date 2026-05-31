@@ -189,6 +189,7 @@ td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #151515; }
 
   <div class="footer">
     <button class="btn-sm" id="refreshBtn" onclick="manualRefresh()">Refresh</button>
+    <button class="btn-sm" onclick="exportData()">Export</button>
     <button class="btn-sm" onclick="logout()">Logout</button>
     <div class="footer-info" id="rateInfo"></div>
   </div>
@@ -606,6 +607,76 @@ function render() {
     var appLabel = e.app === 'yula' ? '<span style="font-size:9px;color:#60a5fa;margin-left:4px;">Y</span>' : '';
     return '<tr><td style="white-space:nowrap;font-size:11px;color:#666;">' + time + '</td><td>' + badge + appLabel + '</td><td style="font-size:12px;color:#888;">' + detail + '</td><td id="del-' + e.id + '"><button class="btn-del" onclick="showDeleteConfirm(' + e.id + ')">✕</button></td></tr>';
   }).join('');
+}
+
+function exportData() {
+  var events = getFiltered();
+  var downloads = events.filter(function(e) { return e.event === 'download'; });
+  var purchases = events.filter(function(e) { return e.event === 'purchase'; });
+  var paidPurchases = purchases.filter(function(e) { return e.source !== 'offerCode'; });
+  var offerPurchases = purchases.filter(function(e) { return e.source === 'offerCode'; });
+
+  var revenueUSD = 0;
+  paidPurchases.forEach(function(e) { revenueUSD += toUSD(e.price, e.currency); });
+
+  var countries = {};
+  events.forEach(function(e) { var l = (e.locale || '??').toUpperCase(); countries[l] = (countries[l] || 0) + 1; });
+
+  var devices = {};
+  events.forEach(function(e) { var d = e.device || '??'; devices[d] = (devices[d] || 0) + 1; });
+
+  var byCurrency = {};
+  paidPurchases.forEach(function(e) {
+    var c = e.currency || 'USD';
+    if (!byCurrency[c]) byCurrency[c] = { total: 0, count: 0 };
+    byCurrency[c].total += parseFloat(e.price || 0);
+    byCurrency[c].count++;
+  });
+
+  var report = {
+    exported: new Date().toISOString(),
+    filter: { app: currentApp, time: currentTime },
+    summary: {
+      downloads: downloads.length,
+      purchases: purchases.length,
+      paid: paidPurchases.length,
+      offerCodes: offerPurchases.length,
+      revenueUSD: Math.round(revenueUSD * 100) / 100,
+      proceedsUSD: Math.round(revenueUSD * 0.85 * 100) / 100,
+      conversion: downloads.length > 0 ? Math.round((purchases.length / downloads.length) * 1000) / 10 + '%' : '0%',
+      arpu: downloads.length > 0 ? '$' + (Math.round(revenueUSD / downloads.length * 100) / 100) : '$0'
+    },
+    countries: countries,
+    devices: devices,
+    revenueByCurrency: byCurrency,
+    recentEvents: events.slice(0, 20).map(function(e) {
+      return {
+        time: e.created_at,
+        app: e.app,
+        event: e.event,
+        source: e.source || null,
+        price: e.price || null,
+        currency: e.currency || null,
+        locale: e.locale,
+        device: e.device
+      };
+    })
+  };
+
+  var text = JSON.stringify(report, null, 2);
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied to clipboard!', 'dl');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied to clipboard!', 'dl');
+  });
 }
 
 setInterval(function() { if (SECRET_KEY) loadData(); }, 60000);
