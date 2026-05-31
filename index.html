@@ -119,8 +119,16 @@ td{font-size:13px;padding:10px 0;border-bottom:1px solid #151515}
 <body>
 <div id="loginView" class="login-wrap">
   <h1 style="margin-bottom:16px">Indie Analytics</h1>
-  <input type="password" id="keyInput" placeholder="Enter service_role key"/>
-  <button onclick="login()">Unlock</button>
+  <div id="loginSetup">
+    <input type="password" id="keyInput" placeholder="Service role key" style="margin-bottom:8px"/>
+    <input type="password" id="pinSetup" placeholder="Set a password"/>
+    <button onclick="firstLogin()">Setup & Unlock</button>
+  </div>
+  <div id="loginPin" style="display:none">
+    <input type="password" id="pinInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')pinLogin()"/>
+    <button onclick="pinLogin()">Unlock</button>
+    <div style="margin-top:12px"><button class="btn-sm" onclick="resetLogin()" style="font-size:11px;color:#555">Reset (forgot password)</button></div>
+  </div>
   <div id="loginError" class="error"></div>
 </div>
 <div id="dashboard" style="display:none">
@@ -245,11 +253,18 @@ function showToast(m,t){var el=document.createElement('div');el.className='toast
 function toUSD(p,c){if(!p)return 0;var a=parseFloat(p);if(!c||c==='USD')return a;var r=fxRates[c];return r?a/r:a}
 function loadFxRates(){return fetch('https://api.frankfurter.dev/v1/latest?base=USD').then(function(r){return r.json()}).then(function(d){fxRates=d.rates||{};var el=document.getElementById('rateInfo');if(el)el.textContent='FX: '+d.date}).catch(function(){fxRates={EUR:0.92,GBP:0.79,TRY:38.5,BRL:5.6,MXN:19.5,INR:85,IDR:16200,CAD:1.37,AUD:1.55,JPY:155}})}
 
-// AUTH + REALTIME
-function login(){SK=document.getElementById('keyInput').value.trim();if(!SK)return;document.getElementById('loginError').textContent='';loadFxRates().then(function(){return loadData()}).then(function(ok){if(ok){localStorage.setItem('sb_key_v8',SK);document.getElementById('loginView').style.display='none';document.getElementById('dashboard').style.display='block';initRealtime()}})}
-function logout(){if(rtChannel){rtChannel.unsubscribe();rtChannel=null}localStorage.removeItem('sb_key_v8');SK='';allEvents=[];prevDownloads=-1;prevRevenue=-1;document.getElementById('rtDot').className='rt-dot rt-off';document.getElementById('dashboard').style.display='none';document.getElementById('loginView').style.display='flex';document.getElementById('keyInput').value=''}
+// CRYPTO
+async function deriveKey(pw,salt){var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encryptStr(text,pw){var salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await deriveKey(pw,salt),enc=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(text)),buf=new Uint8Array(salt.length+iv.length+new Uint8Array(enc).length);buf.set(salt);buf.set(iv,16);buf.set(new Uint8Array(enc),28);return btoa(String.fromCharCode.apply(null,buf))}
+async function decryptStr(b64,pw){try{var buf=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)}),salt=buf.slice(0,16),iv=buf.slice(16,28),data=buf.slice(28),key=await deriveKey(pw,salt),dec=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,data);return new TextDecoder().decode(dec)}catch(e){return null}}
+
+// AUTH
+async function firstLogin(){var key=document.getElementById('keyInput').value.trim(),pw=document.getElementById('pinSetup').value.trim();if(!key||!pw)return;if(pw.length<4){document.getElementById('loginError').textContent='Password must be at least 4 characters';return}document.getElementById('loginError').textContent='';SK=key;var ok=await loadFxRates().then(function(){return loadData()});if(ok){var enc=await encryptStr(key,pw);localStorage.setItem('sb_enc_v1',enc);document.getElementById('loginView').style.display='none';document.getElementById('dashboard').style.display='block';initRealtime()}else{SK=''}}
+async function pinLogin(){var pw=document.getElementById('pinInput').value.trim();if(!pw)return;document.getElementById('loginError').textContent='';var enc=localStorage.getItem('sb_enc_v1');var key=await decryptStr(enc,pw);if(!key){document.getElementById('loginError').textContent='Wrong password';return}SK=key;var ok=await loadFxRates().then(function(){return loadData()});if(ok){document.getElementById('loginView').style.display='none';document.getElementById('dashboard').style.display='block';initRealtime()}else{document.getElementById('loginError').textContent='Key decrypted but connection failed';SK=''}}
+function resetLogin(){localStorage.removeItem('sb_enc_v1');document.getElementById('loginSetup').style.display='block';document.getElementById('loginPin').style.display='none';document.getElementById('loginError').textContent='';document.getElementById('keyInput').value='';document.getElementById('pinSetup').value=''}
+function logout(){if(rtChannel){rtChannel.unsubscribe();rtChannel=null}SK='';allEvents=[];prevDownloads=-1;prevRevenue=-1;document.getElementById('rtDot').className='rt-dot rt-off';document.getElementById('dashboard').style.display='none';document.getElementById('loginView').style.display='flex';if(localStorage.getItem('sb_enc_v1')){document.getElementById('loginSetup').style.display='none';document.getElementById('loginPin').style.display='block';document.getElementById('pinInput').value=''}else{document.getElementById('loginSetup').style.display='block';document.getElementById('loginPin').style.display='none'}document.getElementById('loginError').textContent=''}
 function initRealtime(){try{sbClient=window.supabase.createClient(SB,SK);rtChannel=sbClient.channel('events-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'events'},function(payload){allEvents.unshift(payload.new);checkForNew();if(currentTab==='dashboard')render()}).subscribe(function(status){document.getElementById('rtDot').className='rt-dot '+(status==='SUBSCRIBED'?'rt-on':'rt-off')})}catch(e){console.log('[RT] init failed:',e)}}
-function init(){var s=localStorage.getItem('sb_key_v8');if(s){SK=s;loadFxRates().then(function(){return loadData()}).then(function(ok){if(ok){document.getElementById('loginView').style.display='none';document.getElementById('dashboard').style.display='block';initRealtime()}else localStorage.removeItem('sb_key_v8')})}}
+function init(){var enc=localStorage.getItem('sb_enc_v1');if(enc){document.getElementById('loginSetup').style.display='none';document.getElementById('loginPin').style.display='block'}else{document.getElementById('loginSetup').style.display='block';document.getElementById('loginPin').style.display='none'}}
 
 // TABS
 function switchTab(t,b){currentTab=t;var tabs=document.querySelectorAll('.main-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');b.classList.add('active');['dashboard','notes','marketing','insights','storage'].forEach(function(x){document.getElementById('tab-'+x).style.display=x===t?'block':'none'});if(t==='notes')loadNotes();if(t==='marketing')loadCampaigns();if(t==='insights')renderInsights();if(t==='storage')loadFiles()}
