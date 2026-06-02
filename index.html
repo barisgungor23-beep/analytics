@@ -448,12 +448,15 @@ function setApp(a,btn){currentApp=a;activate(btn,'appSeg');renderAll()}
 function setTime(t,btn){currentTime=t;activate(btn,'timeSeg');renderAll()}
 function activate(btn,parent){var b=qs(parent).querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.remove('active');btn.classList.add('active')}
 function switchTab(t,btn){currentTab=t;var tb=document.querySelectorAll('.tab');for(var i=0;i<tb.length;i++)tb[i].classList.remove('active');btn.classList.add('active');var p=document.querySelectorAll('.tab-panel');for(var j=0;j<p.length;j++)p[j].classList.remove('active');qs('panel-'+t).classList.add('active');if(t==='storage')loadFiles();renderAll()}
-function filtered(){var ev=currentApp==='all'?allEvents:allEvents.filter(function(e){return e.app===currentApp});if(currentTime==='lifetime')return ev;var now=new Date(),cut;if(currentTime==='today')cut=new Date(now.getFullYear(),now.getMonth(),now.getDate());if(currentTime==='7d')cut=new Date(Date.now()-7*864e5);if(currentTime==='30d')cut=new Date(Date.now()-30*864e5);return ev.filter(function(e){return new Date(e.created_at)>=cut})}
-function summary(ev){var dl=ev.filter(function(e){return e.event==='download'}),pr=ev.filter(function(e){return e.event==='purchase'}),paid=pr.filter(function(e){return e.source!=='offerCode'}),code=pr.filter(function(e){return e.source==='offerCode'}),rev=0;paid.forEach(function(e){rev+=toUSD(e.price,e.currency)});return{dl:dl,pr:pr,paid:paid,code:code,rev:rev}}
+	function uniqueEvents(ev){var seen={},out=[];(ev||[]).forEach(function(e){var key=e&&e.id!=null?'id:'+e.id:JSON.stringify([e.created_at,e.app,e.event,e.source,e.device,e.locale,e.price,e.currency]);if(!seen[key]){seen[key]=true;out.push(e)}});return out}
+	function priceValue(e){var n=parseFloat(e&&e.price);return isFinite(n)?n:0}
+	function hasRevenue(e){return priceValue(e)>0}
+	function filtered(){var base=uniqueEvents(allEvents);var ev=currentApp==='all'?base:base.filter(function(e){return e.app===currentApp});if(currentTime==='lifetime')return ev;var now=new Date(),cut;if(currentTime==='today')cut=new Date(now.getFullYear(),now.getMonth(),now.getDate());if(currentTime==='7d')cut=new Date(Date.now()-7*864e5);if(currentTime==='30d')cut=new Date(Date.now()-30*864e5);return ev.filter(function(e){return new Date(e.created_at)>=cut})}
+	function summary(ev){ev=uniqueEvents(ev);var dl=ev.filter(function(e){return e.event==='download'}),pr=ev.filter(function(e){return e.event==='purchase'}),paid=pr.filter(hasRevenue),code=pr.filter(function(e){return e.source==='offerCode'}),free=pr.filter(function(e){return priceValue(e)===0}),paidCode=code.filter(hasRevenue),freeCode=code.filter(function(e){return priceValue(e)===0}),restore=pr.filter(function(e){return e.source==='restore'}),unknown=pr.filter(function(e){return e.price===null||e.price===undefined||e.price===''}),rev=0;paid.forEach(function(e){rev+=toUSD(e.price,e.currency)});return{dl:dl,pr:pr,paid:paid,code:code,free:free,paidCode:paidCode,freeCode:freeCode,restore:restore,unknown:unknown,rev:rev}}
 function renderAll(){var ev=filtered(),s=summary(ev);qs('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});qs('mDownloads').textContent=s.dl.length;qs('sDownloads').textContent=s.dl.filter(function(e){return e.source!=='update'}).length+' new / '+s.dl.filter(function(e){return e.source==='update'}).length+' updates';qs('mPurchases').textContent=s.pr.length;qs('sPurchases').textContent=s.paid.length+' paid / '+s.code.length+' codes';qs('mRevenue').textContent='$'+s.rev.toFixed(2);qs('sRevenue').textContent='$'+(s.rev*.85).toFixed(2)+' estimated proceeds';qs('mConversion').textContent=(s.dl.length?(s.pr.length/s.dl.length*100).toFixed(1):'0')+'%';renderChart(ev);renderApps();renderOverviewEvents(ev);renderEvents(ev);renderMetadata();renderCampaigns();renderNotes()}
-function checkNew(){var s=summary(allEvents);if(prevDownloads>=0&&s.dl.length>prevDownloads)toast('New download');if(prevRevenue>=0&&s.rev>prevRevenue)toast('New revenue $'+(s.rev-prevRevenue).toFixed(2));prevDownloads=s.dl.length;prevRevenue=s.rev}
+	function checkNew(){var s=summary(uniqueEvents(allEvents));if(prevDownloads>=0&&s.dl.length>prevDownloads)toast('New download');if(prevRevenue>=0&&s.rev>prevRevenue)toast('New revenue $'+(s.rev-prevRevenue).toFixed(2));prevDownloads=s.dl.length;prevRevenue=s.rev}
 function renderChart(ev){var data=[],labels=[],title='Activity';if(currentTime==='today'){title='Today by hour';var td=new Date().toISOString().slice(0,10);for(var h=0;h<24;h++){var hh=String(h).padStart(2,'0');data.push(ev.filter(function(e){return(e.created_at||'').startsWith(td+'T'+hh)}).length);labels.push(h%6===0?hh+':00':'')}}else if(currentTime==='7d'||currentTime==='30d'){var days=currentTime==='7d'?7:30;title=currentTime==='7d'?'Last 7 days':'Last 30 days';for(var i=days-1;i>=0;i--){var d=new Date(Date.now()-i*864e5),ds=d.toISOString().slice(0,10);data.push(ev.filter(function(e){return(e.created_at||'').startsWith(ds)}).length);labels.push(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]:(i%6===0?d.getDate()+'/'+(d.getMonth()+1):''))}}else{title='All time by week';if(ev.length){var first=new Date(ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)})[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));for(var w=weeks-1;w>=0;w--){var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=ws&&d<we}).length);labels.push(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''))}}}qs('activityTitle').textContent=title;var mx=Math.max.apply(null,data)||1;qs('activityChart').innerHTML=data.length?data.map(function(v,i){return'<div class="bar-wrap"><div class="bar-num">'+(v||'')+'</div><div class="bar" style="height:'+Math.max(3,Math.round(v/mx*165))+'px"></div><div class="bar-lbl">'+labels[i]+'</div></div>'}).join(''):'<div class="empty">No data yet</div>'}
-function renderApps(){var apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(allEvents.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100);rows+='<div class="row"><div><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill" style="width:'+w+'%"></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
+	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100);rows+='<div class="row"><div><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill" style="width:'+w+'%"></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
 function renderOverviewEvents(ev){var rc=ev.slice(0,4);qs('overviewEvents').innerHTML=rc.length?rc.map(eventRowMini).join(''):'<div class="empty">No events</div>'}
 function eventBadge(e){if(e.event==='download'&&e.source==='update')return'<span class="pill update">update</span>';if(e.event==='download')return'<span class="pill download">download</span>';if(e.source==='offerCode')return'<span class="pill code">code</span>';return'<span class="pill purchase">'+esc(e.event)+'</span>'}
 function eventRowMini(e){var d=new Date(e.created_at);var detail=e.event==='purchase'&&e.price?(e.price+' '+(e.currency||'USD')):(e.locale||'');return'<div class="row"><div><div class="row-main">'+eventBadge(e)+' '+esc(e.app||'')+'</div><div class="row-sub">'+d.toLocaleString('tr-TR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · '+esc(detail)+'</div></div></div>'}
@@ -467,11 +470,11 @@ function toggleMetaForm(){qs('metadataForm').classList.toggle('hide')}
 function clearMetaForm(){qs('metaJsonInput').value='';qs('metaStatus').textContent=''}
 function addMetadataManual(){var body={app:qs('metaApp').value,locale:qs('metaLocale').value.trim(),title:qs('metaTitle').value.trim()||null,subtitle:qs('metaSubtitle').value.trim()||null,keywords:qs('metaKeywords').value.trim()||null,notes:qs('metaNotes').value.trim()||null};if(!body.locale){qs('metaStatus').textContent='Locale required';return}fetch(SB+'/rest/v1/metadata_history',{method:'POST',headers:headers(),body:JSON.stringify(body)}).then(function(r){if(r.ok){toast('Metadata saved');loadAll()}})}
 function importMetadata(){try{var json=JSON.parse(qs('metaJsonInput').value.trim()),items=json.locales||[],done=0;if(!json.app||!Array.isArray(items)){qs('metaStatus').textContent='Invalid JSON';return}items.forEach(function(loc){fetch(SB+'/rest/v1/metadata_history',{method:'POST',headers:headers(),body:JSON.stringify({app:json.app,locale:loc.locale,title:loc.title||null,subtitle:loc.subtitle||null,keywords:loc.keywords||null,notes:loc.notes||null})}).then(function(){done++;if(done===items.length){toast('Imported');loadAll()}})})}catch(e){qs('metaStatus').textContent='Invalid JSON'}}
-function metadataVersions(){var sorted=allMetadata.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),groups=[];sorted.forEach(function(m){var ts=new Date(m.created_at).getTime(),g=groups.find(function(x){return x.app===m.app&&Math.abs(new Date(x.created_at).getTime()-ts)<60000});if(g)g.locales.push(m);else groups.push({app:m.app,created_at:m.created_at,locales:[m]})});groups.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});return groups.map(function(g,i,arr){var start=new Date(g.created_at),end=i===0?new Date():new Date(arr[i-1].created_at),ev=allEvents.filter(function(e){var d=new Date(e.created_at);return e.app===g.app&&d>=start&&d<end}),s=summary(ev),days=Math.max(1,Math.ceil((end-start)/864e5));return{g:g,start:start,end:end,s:s,days:days,active:i===0}})}
+	function metadataVersions(){var base=uniqueEvents(allEvents),sorted=allMetadata.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),groups=[];sorted.forEach(function(m){var ts=new Date(m.created_at).getTime(),g=groups.find(function(x){return x.app===m.app&&Math.abs(new Date(x.created_at).getTime()-ts)<60000});if(g)g.locales.push(m);else groups.push({app:m.app,created_at:m.created_at,locales:[m]})});groups.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});return groups.map(function(g,i,arr){var start=new Date(g.created_at),end=i===0?new Date():new Date(arr[i-1].created_at),ev=base.filter(function(e){var d=new Date(e.created_at);return e.app===g.app&&d>=start&&d<end}),s=summary(ev),days=Math.max(1,Math.ceil((end-start)/864e5));return{g:g,start:start,end:end,s:s,days:days,active:i===0}})}
 function renderMetadata(){var versions=metadataVersions();qs('latestMetadata').innerHTML=versions.length?metaSmall(versions[0]):'<div class="empty">No metadata entries</div>';qs('metadataTimeline').innerHTML=versions.length?versions.map(metaCard).join(''):'<div class="empty">No metadata entries</div>';renderLocaleImpact(versions);qs('versionPerformance').innerHTML=versions.slice(0,5).map(function(v,i){return'<div class="row"><div><div class="row-main">v'+(versions.length-i)+' · '+esc(v.g.app)+' '+(v.active?'· active':'')+'</div><div class="row-sub">'+v.days+' days · '+v.s.dl.length+' downloads</div></div><div class="right"><div class="row-main gold">$'+v.s.rev.toFixed(2)+'</div><div class="row-sub">$'+(v.s.rev/v.days).toFixed(2)+'/day</div></div></div>'}).join('')||'<div class="empty">No data</div>'}
 function metaSmall(v){return'<div class="row"><div><div class="row-main">'+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+' revenue · '+v.days+' days</div></div></div>'}
 function metaCard(v){return'<div class="row"><div><div class="row-main">'+(v.active?'<span class="pill code">active</span> ':'')+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.start.toLocaleDateString('tr-TR')+' -> '+(v.active?'now':v.end.toLocaleDateString('tr-TR'))+' · '+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+'</div></div><div class="right"><div class="row-main blue">'+(v.s.dl.length/v.days).toFixed(1)+'</div><div class="row-sub">dl/day</div></div></div>'}
-function renderLocaleImpact(versions){var map={};allEvents.forEach(function(e){var l=(e.locale||'unknown').toLowerCase();if(!map[l])map[l]={dl:0,rev:0,pr:0};if(e.event==='download')map[l].dl++;if(e.event==='purchase'){map[l].pr++;if(e.source!=='offerCode')map[l].rev+=toUSD(e.price,e.currency)}});var rows=Object.entries(map).sort(function(a,b){return b[1].dl-a[1].dl}).slice(0,8);var max=rows.length?rows[0][1].dl:1;qs('localeImpact').innerHTML=rows.length?rows.map(function(r){return'<div class="row"><div><div class="row-main">'+esc(r[0].toUpperCase())+'</div><div class="row-sub">'+r[1].dl+' downloads · '+r[1].pr+' purchases · $'+r[1].rev.toFixed(2)+'</div><div class="progress"><div class="fill" style="width:'+Math.round(r[1].dl/max*100)+'%"></div></div></div></div>'}).join(''):'<div class="empty">No locale data</div>'}
+	function renderLocaleImpact(versions){var map={};uniqueEvents(allEvents).forEach(function(e){var l=(e.locale||'unknown').toLowerCase();if(!map[l])map[l]={dl:0,rev:0,pr:0};if(e.event==='download')map[l].dl++;if(e.event==='purchase'){map[l].pr++;if(hasRevenue(e))map[l].rev+=toUSD(e.price,e.currency)}});var rows=Object.entries(map).sort(function(a,b){return b[1].dl-a[1].dl}).slice(0,8);var max=rows.length?rows[0][1].dl:1;qs('localeImpact').innerHTML=rows.length?rows.map(function(r){return'<div class="row"><div><div class="row-main">'+esc(r[0].toUpperCase())+'</div><div class="row-sub">'+r[1].dl+' downloads · '+r[1].pr+' purchases · $'+r[1].rev.toFixed(2)+'</div><div class="progress"><div class="fill" style="width:'+Math.round(r[1].dl/max*100)+'%"></div></div></div></div>'}).join(''):'<div class="empty">No locale data</div>'}
 function addCampaign(){var body={app:qs('campaignApp').value,platform:qs('campaignPlatform').value,name:qs('campaignName').value.trim(),code:qs('campaignCode').value.trim()||null,notes:qs('campaignNotes').value.trim()||null};if(!body.name)return;fetch(SB+'/rest/v1/campaigns',{method:'POST',headers:headers(),body:JSON.stringify(body)}).then(function(r){if(r.ok){toast('Campaign saved');loadAll()}})}
 function renderCampaigns(){qs('campaignList').innerHTML=allCampaigns.length?allCampaigns.map(function(c){var d=new Date(c.created_at);return'<div class="row"><div><div class="row-main">'+esc(c.name)+' <span class="pill">'+esc(c.platform)+'</span></div><div class="row-sub">'+esc(c.app||'all')+' · '+d.toLocaleDateString('tr-TR')+(c.code?' · code '+esc(c.code):'')+(c.notes?' · '+esc(c.notes):'')+'</div></div></div>'}).join(''):'<div class="empty">No campaigns</div>'}
 function addNote(){var text=qs('noteInput').value.trim();if(!text)return;fetch(SB+'/rest/v1/notes',{method:'POST',headers:headers(),body:JSON.stringify({text:text,tag:qs('noteTag').value})}).then(function(r){if(r.ok){qs('noteInput').value='';loadNotesSilent().then(renderNotes)}})}
@@ -492,10 +495,14 @@ function exportDashboardData(){
       downloads:s.dl.length,
       newDownloads:s.dl.filter(function(e){return e.source!=='update'}).length,
       updates:s.dl.filter(function(e){return e.source==='update'}).length,
-      purchases:s.pr.length,
-      paidPurchases:s.paid.length,
-      offerCodes:s.code.length,
-      revenueUSD:Math.round(s.rev*100)/100,
+	      purchases:s.pr.length,
+	      paidPurchases:s.paid.length,
+	      offerCodes:s.code.length,
+	      paidOfferCodes:s.paidCode.length,
+	      freeOfferCodes:s.freeCode.length,
+	      restorePurchases:s.restore.length,
+	      unknownPricePurchases:s.unknown.length,
+	      revenueUSD:Math.round(s.rev*100)/100,
       proceedsUSD:Math.round(s.rev*.85*100)/100,
       conversion:s.dl.length?Math.round(s.pr.length/s.dl.length*1000)/10+'%':'0%',
       arpu:s.dl.length?'$'+(s.rev/s.dl.length).toFixed(2):'$0.00'
@@ -518,13 +525,16 @@ function buildLocaleExport(ev){
   var map={};
   ev.forEach(function(e){
     var l=(e.locale||'unknown').toLowerCase();
-    if(!map[l])map[l]={downloads:0,purchases:0,paidPurchases:0,offerCodes:0,revenueUSD:0};
-    if(e.event==='download')map[l].downloads++;
-    if(e.event==='purchase'){
-      map[l].purchases++;
-      if(e.source==='offerCode')map[l].offerCodes++;
-      else{map[l].paidPurchases++;map[l].revenueUSD+=toUSD(e.price,e.currency)}
-    }
+	    if(!map[l])map[l]={downloads:0,purchases:0,paidPurchases:0,offerCodes:0,paidOfferCodes:0,freeOfferCodes:0,restorePurchases:0,unknownPricePurchases:0,revenueUSD:0};
+	    if(e.event==='download')map[l].downloads++;
+	    if(e.event==='purchase'){
+	      map[l].purchases++;
+	      if(e.source==='offerCode')map[l].offerCodes++;
+	      if(e.source==='restore')map[l].restorePurchases++;
+	      if(e.price===null||e.price===undefined||e.price==='')map[l].unknownPricePurchases++;
+	      if(hasRevenue(e)){map[l].paidPurchases++;map[l].revenueUSD+=toUSD(e.price,e.currency);if(e.source==='offerCode')map[l].paidOfferCodes++}
+	      else if(e.source==='offerCode')map[l].freeOfferCodes++;
+	    }
   });
   return Object.keys(map).sort().map(function(k){
     var x=map[k];
@@ -536,14 +546,18 @@ function buildLocaleExport(ev){
 }
 function buildAppExport(){
   return ['personalcapsule','yula','appconsol'].map(function(app){
-    var ev=allEvents.filter(function(e){return e.app===app}),s=summary(ev);
+	    var ev=uniqueEvents(allEvents).filter(function(e){return e.app===app}),s=summary(ev);
     return{
       app:app,
       downloads:s.dl.length,
-      purchases:s.pr.length,
-      paidPurchases:s.paid.length,
-      offerCodes:s.code.length,
-      revenueUSD:Math.round(s.rev*100)/100,
+	      purchases:s.pr.length,
+	      paidPurchases:s.paid.length,
+	      offerCodes:s.code.length,
+	      paidOfferCodes:s.paidCode.length,
+	      freeOfferCodes:s.freeCode.length,
+	      restorePurchases:s.restore.length,
+	      unknownPricePurchases:s.unknown.length,
+	      revenueUSD:Math.round(s.rev*100)/100,
       proceedsUSD:Math.round(s.rev*.85*100)/100,
       conversion:s.dl.length?Math.round(s.pr.length/s.dl.length*1000)/10+'%':'0%'
     };
