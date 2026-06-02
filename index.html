@@ -93,6 +93,7 @@ button{cursor:pointer}
   gap:16px;
   margin-bottom:18px;
 }
+.brand{display:flex;align-items:center;gap:10px}
 .brand h1{font-size:30px;color:var(--gold);line-height:1.05}
 .brand p{font-size:13px;color:var(--muted);margin-top:7px}
 .status{font-size:12px;color:var(--muted);text-align:right;padding-top:7px}
@@ -225,6 +226,7 @@ textarea.field{min-height:92px;resize:vertical}
   .form-row{grid-template-columns:1fr}
   .status{text-align:left}
   .topbar{display:block;margin-bottom:10px}
+  .brand{justify-content:space-between}
   .header-actions{justify-content:space-between;margin-top:8px}
   .quickbar{display:grid;grid-template-columns:repeat(2,1fr);margin:0 0 12px}
   .quickbar .ghost{width:100%;text-align:center}
@@ -264,6 +266,7 @@ body.desktop-mode .tab{width:auto}
 <main id="shell" class="shell">
   <div class="topbar">
     <div class="brand">
+      <button id="tabsBtn" class="ghost" onclick="toggleTabs()">Tabs</button>
       <h1>Indie Analytics</h1>
     </div>
     <div class="header-actions">
@@ -279,7 +282,7 @@ body.desktop-mode .tab{width:auto}
     <div id="lastUpdated" class="sub" style="align-self:center">Not loaded</div>
   </div>
 
-  <nav class="tabs">
+  <nav id="tabsMenu" class="tabs hide">
     <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
     <button class="tab desktop-tab" onclick="switchTab('metadata',this)">Metadata</button>
     <button class="tab desktop-tab" onclick="switchTab('campaigns',this)">Campaigns</button>
@@ -511,7 +514,8 @@ function loadMetadataSilent(){return fetch(SB+'/rest/v1/metadata_history?select=
 function setApp(a,btn){currentApp=a;activate(btn,'appSeg');renderAll()}
 function setTime(t,btn){currentTime=t;activate(btn,'timeSeg');renderAll()}
 function activate(btn,parent){var b=qs(parent).querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.remove('active');btn.classList.add('active')}
-function switchTab(t,btn){currentTab=t;var tb=document.querySelectorAll('.tab');for(var i=0;i<tb.length;i++)tb[i].classList.remove('active');btn.classList.add('active');var p=document.querySelectorAll('.tab-panel');for(var j=0;j<p.length;j++)p[j].classList.remove('active');qs('panel-'+t).classList.add('active');if(t==='storage')loadFiles();renderAll()}
+function switchTab(t,btn){currentTab=t;var tb=document.querySelectorAll('.tab');for(var i=0;i<tb.length;i++)tb[i].classList.remove('active');btn.classList.add('active');var p=document.querySelectorAll('.tab-panel');for(var j=0;j<p.length;j++)p[j].classList.remove('active');qs('panel-'+t).classList.add('active');if(t==='storage')loadFiles();var menu=qs('tabsMenu'),tbtn=qs('tabsBtn');if(menu&&!menu.classList.contains('hide')){menu.classList.add('hide');if(tbtn)tbtn.textContent='Tabs'}renderAll()}
+function toggleTabs(){var menu=qs('tabsMenu'),btn=qs('tabsBtn');menu.classList.toggle('hide');if(btn)btn.textContent=menu.classList.contains('hide')?'Tabs':'Close'}
 function toggleMenu(){var bar=qs('quickbar'),btn=qs('menuBtn');bar.classList.toggle('hide');if(btn)btn.textContent=bar.classList.contains('hide')?'Menu':'Close'}
 function displayMode(){return localStorage.getItem('dashboard_display_mode')||'desktop'}
 function isMobileMode(){return displayMode()==='mobile'}
