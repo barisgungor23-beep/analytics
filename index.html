@@ -96,6 +96,7 @@ button{cursor:pointer}
 .brand h1{font-size:30px;color:var(--gold);line-height:1.05}
 .brand p{font-size:13px;color:var(--muted);margin-top:7px}
 .status{font-size:12px;color:var(--muted);text-align:right;padding-top:7px}
+.header-actions{display:flex;align-items:center;gap:10px;justify-content:flex-end}
 .quickbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:-8px 0 14px}
 .quickbar .ghost{padding:9px 12px}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:6px}
@@ -224,8 +225,10 @@ textarea.field{min-height:92px;resize:vertical}
   .form-row{grid-template-columns:1fr}
   .status{text-align:left}
   .topbar{display:block;margin-bottom:10px}
+  .header-actions{justify-content:space-between;margin-top:8px}
   .quickbar{display:grid;grid-template-columns:repeat(2,1fr);margin:0 0 12px}
   .quickbar .ghost{width:100%;text-align:center}
+  .quickbar .sub{grid-column:1/-1;text-align:center}
   .desktop-tab{display:none}
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .tab{width:100%;text-align:center;padding:11px 8px}
@@ -262,18 +265,18 @@ body.desktop-mode .tab{width:auto}
   <div class="topbar">
     <div class="brand">
       <h1>Indie Analytics</h1>
-      <p>Downloads, purchases, revenue, metadata impact and manual campaign tracking.</p>
     </div>
-    <div class="status">
-      <div>Realtime <span id="rtDot" class="dot"></span></div>
-      <div id="lastUpdated">Not loaded</div>
+    <div class="header-actions">
+      <div class="status">Realtime <span id="rtDot" class="dot"></span></div>
+      <button id="menuBtn" class="ghost" onclick="toggleMenu()">Menu</button>
     </div>
   </div>
-  <div class="quickbar">
+  <div id="quickbar" class="quickbar hide">
     <button id="modeBtn" class="ghost" onclick="toggleDisplayMode()">Mobile mode</button>
     <button id="soundBtn" class="ghost" onclick="toggleSound()">Sound off</button>
     <button id="bioBtn" class="ghost" onclick="toggleBiometric()">Enable biometric</button>
     <button class="ghost" onclick="exportDashboardData()">Export</button>
+    <div id="lastUpdated" class="sub" style="align-self:center">Not loaded</div>
   </div>
 
   <nav class="tabs">
@@ -509,6 +512,7 @@ function setApp(a,btn){currentApp=a;activate(btn,'appSeg');renderAll()}
 function setTime(t,btn){currentTime=t;activate(btn,'timeSeg');renderAll()}
 function activate(btn,parent){var b=qs(parent).querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.remove('active');btn.classList.add('active')}
 function switchTab(t,btn){currentTab=t;var tb=document.querySelectorAll('.tab');for(var i=0;i<tb.length;i++)tb[i].classList.remove('active');btn.classList.add('active');var p=document.querySelectorAll('.tab-panel');for(var j=0;j<p.length;j++)p[j].classList.remove('active');qs('panel-'+t).classList.add('active');if(t==='storage')loadFiles();renderAll()}
+function toggleMenu(){var bar=qs('quickbar'),btn=qs('menuBtn');bar.classList.toggle('hide');if(btn)btn.textContent=bar.classList.contains('hide')?'Menu':'Close'}
 function displayMode(){return localStorage.getItem('dashboard_display_mode')||'desktop'}
 function isMobileMode(){return displayMode()==='mobile'}
 function applyDisplayMode(){var m=displayMode();document.body.classList.toggle('mobile-mode',m==='mobile');document.body.classList.toggle('desktop-mode',m==='desktop');var b=qs('modeBtn');if(b)b.textContent=m==='mobile'?'Desktop mode':'Mobile mode'}
