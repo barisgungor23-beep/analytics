@@ -96,6 +96,8 @@ button{cursor:pointer}
 .brand h1{font-size:30px;color:var(--gold);line-height:1.05}
 .brand p{font-size:13px;color:var(--muted);margin-top:7px}
 .status{font-size:12px;color:var(--muted);text-align:right;padding-top:7px}
+.quickbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:-8px 0 14px}
+.quickbar .ghost{padding:9px 12px}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:6px}
 .dot.on{background:var(--green)}
 .tabs{
@@ -221,6 +223,9 @@ textarea.field{min-height:92px;resize:vertical}
   .sub{font-size:11px}
   .form-row{grid-template-columns:1fr}
   .status{text-align:left}
+  .topbar{display:block;margin-bottom:10px}
+  .quickbar{display:grid;grid-template-columns:1fr 1fr;margin:0 0 12px}
+  .quickbar .ghost{width:100%;text-align:center}
   .desktop-tab{display:none}
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .tab{width:100%;text-align:center;padding:11px 8px}
@@ -261,9 +266,11 @@ body.desktop-mode .tab{width:auto}
     <div class="status">
       <div>Realtime <span id="rtDot" class="dot"></span></div>
       <div id="lastUpdated">Not loaded</div>
-      <button id="modeBtn" class="ghost" style="margin-top:10px" onclick="toggleDisplayMode()">Mobile mode</button>
-      <button class="ghost" style="margin-top:10px" onclick="exportDashboardData()">Export</button>
     </div>
+  </div>
+  <div class="quickbar">
+    <button id="modeBtn" class="ghost" onclick="toggleDisplayMode()">Mobile mode</button>
+    <button class="ghost" onclick="exportDashboardData()">Export</button>
   </div>
 
   <nav class="tabs">
