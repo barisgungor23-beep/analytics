@@ -214,7 +214,7 @@ textarea.field{min-height:92px;resize:vertical}
   .value{font-size:32px}
   .section{padding:16px}
 }
-@media(max-width:520px){
+@media(max-width:768px){
   .grid{grid-template-columns:1fr 1fr;gap:9px}
   .card{padding:14px;border-radius:16px}
   .value{font-size:28px}
@@ -225,6 +225,12 @@ textarea.field{min-height:92px;resize:vertical}
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .tab{width:100%;text-align:center;padding:11px 8px}
 }
+body.mobile-mode .desktop-tab{display:none!important}
+body.mobile-mode .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+body.mobile-mode .tab{width:100%;text-align:center}
+body.desktop-mode .desktop-tab{display:inline-flex!important}
+body.desktop-mode .tabs{display:flex!important}
+body.desktop-mode .tab{width:auto}
 </style>
 </head>
 <body>
@@ -255,6 +261,7 @@ textarea.field{min-height:92px;resize:vertical}
     <div class="status">
       <div>Realtime <span id="rtDot" class="dot"></span></div>
       <div id="lastUpdated">Not loaded</div>
+      <button id="modeBtn" class="ghost" style="margin-top:10px" onclick="toggleDisplayMode()">Mobile mode</button>
       <button class="ghost" style="margin-top:10px" onclick="exportDashboardData()">Export</button>
     </div>
   </div>
@@ -473,11 +480,11 @@ function monthEvents(){var k=monthKey();return uniqueEvents(allEvents).filter(fu
 async function deriveKey(pw,salt){var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encryptStr(text,pw){var salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await deriveKey(pw,salt),enc=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(text)),out=new Uint8Array(28+new Uint8Array(enc).length);out.set(salt);out.set(iv,16);out.set(new Uint8Array(enc),28);return btoa(String.fromCharCode.apply(null,out))}
 async function decryptStr(b64,pw){try{var b=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)}),key=await deriveKey(pw,b.slice(0,16)),dec=await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(16,28)},key,b.slice(28));return new TextDecoder().decode(dec)}catch(e){return null}}
-function init(){if(localStorage.getItem('sb_enc_v1')){qs('setupBox').classList.add('hide');qs('pinBox').classList.remove('hide')}}
+function init(){applyDisplayMode();if(localStorage.getItem('sb_enc_v1')){qs('setupBox').classList.add('hide');qs('pinBox').classList.remove('hide')}}
 async function firstLogin(){var key=qs('keyInput').value.trim(),pw=qs('pinSetup').value.trim();if(!key||!pw)return;if(pw.length<4){qs('loginError').textContent='Password must be at least 4 characters';return}SK=key;if(await loadAll()){localStorage.setItem('sb_enc_v1',await encryptStr(key,pw));unlock()}else SK=''}
 async function pinLogin(){var pw=qs('pinInput').value.trim(),enc=localStorage.getItem('sb_enc_v1');var key=await decryptStr(enc,pw);if(!key){qs('loginError').textContent='Wrong password';return}SK=key;if(await loadAll())unlock();else{SK='';qs('loginError').textContent='Key decrypted but connection failed'}}
 function resetLogin(){localStorage.removeItem('sb_enc_v1');location.reload()}
-function unlock(){qs('login').style.display='none';qs('shell').style.display='block';enforceMobileTabs();initRealtime()}
+function unlock(){qs('login').style.display='none';qs('shell').style.display='block';applyDisplayMode();enforceMobileTabs();initRealtime()}
 function initRealtime(){try{sbClient=window.supabase.createClient(SB,SK);rtChannel=sbClient.channel('events-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'events'},function(p){allEvents.unshift(p.new);renderAll();checkNew()}).subscribe(function(s){qs('rtDot').className='dot '+(s==='SUBSCRIBED'?'on':'')})}catch(e){}}
 function loadFxRates(){return fetch('https://api.frankfurter.dev/v1/latest?base=USD').then(function(r){return r.json()}).then(function(d){fxRates=d.rates||{}}).catch(function(){fxRates={EUR:.92,GBP:.79,TRY:38.5,BRL:5.6,MXN:19.5,INR:85,IDR:16200,CAD:1.37,AUD:1.55,JPY:155}})}
 function toUSD(p,c){if(!p)return 0;var n=parseFloat(p);if(!c||c==='USD')return n;return fxRates[c]?n/fxRates[c]:n}
@@ -490,7 +497,11 @@ function setApp(a,btn){currentApp=a;activate(btn,'appSeg');renderAll()}
 function setTime(t,btn){currentTime=t;activate(btn,'timeSeg');renderAll()}
 function activate(btn,parent){var b=qs(parent).querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.remove('active');btn.classList.add('active')}
 function switchTab(t,btn){currentTab=t;var tb=document.querySelectorAll('.tab');for(var i=0;i<tb.length;i++)tb[i].classList.remove('active');btn.classList.add('active');var p=document.querySelectorAll('.tab-panel');for(var j=0;j<p.length;j++)p[j].classList.remove('active');qs('panel-'+t).classList.add('active');if(t==='storage')loadFiles();renderAll()}
-function enforceMobileTabs(){if(window.innerWidth<=520&&['metadata','campaigns','storage'].indexOf(currentTab)>=0){switchTab('overview',document.querySelector("button[onclick*=\"overview\"]"))}}
+function displayMode(){return localStorage.getItem('dashboard_display_mode')||'desktop'}
+function isMobileMode(){return displayMode()==='mobile'}
+function applyDisplayMode(){var m=displayMode();document.body.classList.toggle('mobile-mode',m==='mobile');document.body.classList.toggle('desktop-mode',m==='desktop');var b=qs('modeBtn');if(b)b.textContent=m==='mobile'?'Desktop mode':'Mobile mode'}
+function toggleDisplayMode(){var next=displayMode()==='mobile'?'desktop':'mobile';localStorage.setItem('dashboard_display_mode',next);applyDisplayMode();enforceMobileTabs();toast(next==='mobile'?'Mobile mode':'Desktop mode')}
+function enforceMobileTabs(){if(isMobileMode()&&['metadata','campaigns','storage'].indexOf(currentTab)>=0){switchTab('overview',document.querySelector("button[onclick*=\"overview\"]"))}}
 window.addEventListener('resize',enforceMobileTabs)
 	function uniqueEvents(ev){var seen={},out=[];(ev||[]).forEach(function(e){var key=e&&e.id!=null?'id:'+e.id:JSON.stringify([e.created_at,e.app,e.event,e.source,e.device,e.locale,e.price,e.currency]);if(!seen[key]){seen[key]=true;out.push(e)}});return out}
 	function priceValue(e){var n=parseFloat(e&&e.price);return isFinite(n)?n:0}
