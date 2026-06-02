@@ -221,6 +221,9 @@ textarea.field{min-height:92px;resize:vertical}
   .sub{font-size:11px}
   .form-row{grid-template-columns:1fr}
   .status{text-align:left}
+  .desktop-tab{display:none}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .tab{width:100%;text-align:center;padding:11px 8px}
 }
 </style>
 </head>
@@ -258,11 +261,11 @@ textarea.field{min-height:92px;resize:vertical}
 
   <nav class="tabs">
     <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
-    <button class="tab" onclick="switchTab('metadata',this)">Metadata</button>
-    <button class="tab" onclick="switchTab('campaigns',this)">Campaigns</button>
+    <button class="tab desktop-tab" onclick="switchTab('metadata',this)">Metadata</button>
+    <button class="tab desktop-tab" onclick="switchTab('campaigns',this)">Campaigns</button>
     <button class="tab" onclick="switchTab('events',this)">Events</button>
     <button class="tab" onclick="switchTab('notes',this)">Notes</button>
-    <button class="tab" onclick="switchTab('storage',this)">Storage</button>
+    <button class="tab desktop-tab" onclick="switchTab('storage',this)">Storage</button>
   </nav>
 
   <div class="filters">
@@ -459,7 +462,7 @@ textarea.field{min-height:92px;resize:vertical}
 <script>
 var SB='https://vpsmaqsessodayyjamnd.supabase.co';
 var SK='',allEvents=[],allNotes=[],allCampaigns=[],allMetadata=[],allFiles=[];
-var currentApp='all',currentTime='lifetime',currentTab='overview',fxRates={},prevDownloads=-1,prevRevenue=-1,sbClient=null,rtChannel=null,editingCampaignId=null,editingNoteId=null;
+var currentApp='all',currentTime='lifetime',currentTab='overview',fxRates={},prevNewDownloads=-1,prevRevenue=-1,sbClient=null,rtChannel=null,editingCampaignId=null,editingNoteId=null;
 function qs(id){return document.getElementById(id)}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function headers(){return{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json'}}
@@ -474,7 +477,7 @@ function init(){if(localStorage.getItem('sb_enc_v1')){qs('setupBox').classList.a
 async function firstLogin(){var key=qs('keyInput').value.trim(),pw=qs('pinSetup').value.trim();if(!key||!pw)return;if(pw.length<4){qs('loginError').textContent='Password must be at least 4 characters';return}SK=key;if(await loadAll()){localStorage.setItem('sb_enc_v1',await encryptStr(key,pw));unlock()}else SK=''}
 async function pinLogin(){var pw=qs('pinInput').value.trim(),enc=localStorage.getItem('sb_enc_v1');var key=await decryptStr(enc,pw);if(!key){qs('loginError').textContent='Wrong password';return}SK=key;if(await loadAll())unlock();else{SK='';qs('loginError').textContent='Key decrypted but connection failed'}}
 function resetLogin(){localStorage.removeItem('sb_enc_v1');location.reload()}
-function unlock(){qs('login').style.display='none';qs('shell').style.display='block';initRealtime()}
+function unlock(){qs('login').style.display='none';qs('shell').style.display='block';enforceMobileTabs();initRealtime()}
 function initRealtime(){try{sbClient=window.supabase.createClient(SB,SK);rtChannel=sbClient.channel('events-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'events'},function(p){allEvents.unshift(p.new);renderAll();checkNew()}).subscribe(function(s){qs('rtDot').className='dot '+(s==='SUBSCRIBED'?'on':'')})}catch(e){}}
 function loadFxRates(){return fetch('https://api.frankfurter.dev/v1/latest?base=USD').then(function(r){return r.json()}).then(function(d){fxRates=d.rates||{}}).catch(function(){fxRates={EUR:.92,GBP:.79,TRY:38.5,BRL:5.6,MXN:19.5,INR:85,IDR:16200,CAD:1.37,AUD:1.55,JPY:155}})}
 function toUSD(p,c){if(!p)return 0;var n=parseFloat(p);if(!c||c==='USD')return n;return fxRates[c]?n/fxRates[c]:n}
@@ -487,16 +490,18 @@ function setApp(a,btn){currentApp=a;activate(btn,'appSeg');renderAll()}
 function setTime(t,btn){currentTime=t;activate(btn,'timeSeg');renderAll()}
 function activate(btn,parent){var b=qs(parent).querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.remove('active');btn.classList.add('active')}
 function switchTab(t,btn){currentTab=t;var tb=document.querySelectorAll('.tab');for(var i=0;i<tb.length;i++)tb[i].classList.remove('active');btn.classList.add('active');var p=document.querySelectorAll('.tab-panel');for(var j=0;j<p.length;j++)p[j].classList.remove('active');qs('panel-'+t).classList.add('active');if(t==='storage')loadFiles();renderAll()}
+function enforceMobileTabs(){if(window.innerWidth<=520&&['metadata','campaigns','storage'].indexOf(currentTab)>=0){switchTab('overview',document.querySelector("button[onclick*=\"overview\"]"))}}
+window.addEventListener('resize',enforceMobileTabs)
 	function uniqueEvents(ev){var seen={},out=[];(ev||[]).forEach(function(e){var key=e&&e.id!=null?'id:'+e.id:JSON.stringify([e.created_at,e.app,e.event,e.source,e.device,e.locale,e.price,e.currency]);if(!seen[key]){seen[key]=true;out.push(e)}});return out}
 	function priceValue(e){var n=parseFloat(e&&e.price);return isFinite(n)?n:0}
 	function hasRevenue(e){return priceValue(e)>0}
 	function filtered(){var base=uniqueEvents(allEvents);var ev=currentApp==='all'?base:base.filter(function(e){return e.app===currentApp});if(currentTime==='lifetime')return ev;var now=new Date(),cut;if(currentTime==='today')cut=new Date(now.getFullYear(),now.getMonth(),now.getDate());if(currentTime==='7d')cut=new Date(Date.now()-7*864e5);if(currentTime==='30d')cut=new Date(Date.now()-30*864e5);return ev.filter(function(e){return new Date(e.created_at)>=cut})}
 	function summary(ev){ev=uniqueEvents(ev);var dl=ev.filter(function(e){return e.event==='download'}),pr=ev.filter(function(e){return e.event==='purchase'}),paid=pr.filter(hasRevenue),code=pr.filter(function(e){return e.source==='offerCode'}),free=pr.filter(function(e){return priceValue(e)===0}),paidCode=code.filter(hasRevenue),freeCode=code.filter(function(e){return priceValue(e)===0}),restore=pr.filter(function(e){return e.source==='restore'}),unknown=pr.filter(function(e){return e.price===null||e.price===undefined||e.price===''}),rev=0;paid.forEach(function(e){rev+=toUSD(e.price,e.currency)});return{dl:dl,pr:pr,paid:paid,code:code,free:free,paidCode:paidCode,freeCode:freeCode,restore:restore,unknown:unknown,rev:rev}}
 function renderAll(){var ev=filtered(),s=summary(ev);qs('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});qs('mDownloads').textContent=s.dl.length;qs('sDownloads').textContent=s.dl.filter(function(e){return e.source!=='update'}).length+' new / '+s.dl.filter(function(e){return e.source==='update'}).length+' updates';qs('mPurchases').textContent=s.pr.length;qs('sPurchases').textContent=s.paid.length+' paid / '+s.code.length+' codes';qs('mRevenue').textContent='$'+s.rev.toFixed(2);qs('sRevenue').textContent='$'+(s.rev*.85).toFixed(2)+' estimated proceeds';qs('mConversion').textContent=(s.dl.length?(s.pr.length/s.dl.length*100).toFixed(1):'0')+'%';renderGoal();renderChart(ev);renderApps();renderOverviewEvents(ev);renderEvents(ev);renderMetadata();renderCampaigns();renderNotes()}
-	function checkNew(){var s=summary(uniqueEvents(allEvents));if(prevDownloads>=0&&s.dl.length>prevDownloads)toast('New download');if(prevRevenue>=0&&s.rev>prevRevenue)toast('New revenue $'+(s.rev-prevRevenue).toFixed(2));prevDownloads=s.dl.length;prevRevenue=s.rev}
+	function checkNew(){var s=summary(uniqueEvents(allEvents)),newDownloads=s.dl.filter(function(e){return e.source!=='update'}).length;if(prevNewDownloads>=0&&newDownloads>prevNewDownloads){toast('New user download');burstConfetti(3600)}if(prevRevenue>=0&&s.rev>prevRevenue){toast('New revenue $'+(s.rev-prevRevenue).toFixed(2));burstConfetti(3600)}prevNewDownloads=newDownloads;prevRevenue=s.rev}
 function saveMonthlyGoal(){var n=parseFloat(qs('goalInput').value);if(!isFinite(n)||n<=0){localStorage.removeItem('monthly_goal_usd');toast('Goal cleared')}else{localStorage.setItem('monthly_goal_usd',String(n));toast('Goal saved')}renderGoal()}
 function renderGoal(){var goal=parseFloat(localStorage.getItem('monthly_goal_usd')||'0'),s=summary(monthEvents()),rev=s.rev,txt=qs('goalText'),sub=qs('goalSub'),fill=qs('goalFill'),pct=qs('goalPercent');if(!goal){qs('goalInput').value='';txt.textContent='No monthly goal set';sub.textContent='Set a USD revenue target for this month.';fill.style.width='0%';pct.textContent='0%';return}qs('goalInput').value=goal;var p=Math.min(100,Math.round(rev/goal*100));txt.textContent='$'+rev.toFixed(2)+' of $'+goal.toFixed(2)+' this month';sub.textContent=s.paid.length+' paid purchases · '+s.freeCode.length+' free codes · '+s.dl.length+' downloads';fill.style.width=p+'%';pct.textContent=p+'%';var key='goal_celebrated_'+monthKey()+'_'+currentApp;if(rev>=goal&&!localStorage.getItem(key)){localStorage.setItem(key,'1');burstConfetti();toast('Monthly goal reached')}}
-function burstConfetti(){var box=document.createElement('div');box.className='confetti';for(var i=0;i<70;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=['#d4b56a','#62df86','#73a9ff','#b69cff','#2dd4bf'][i%5];p.style.animationDelay=(Math.random()*.55)+'s';p.style.transform='rotate('+(Math.random()*180)+'deg)';box.appendChild(p)}document.body.appendChild(box);setTimeout(function(){box.remove()},2300)}
+function burstConfetti(ms){ms=ms||3600;var box=document.createElement('div');box.className='confetti';for(var i=0;i<95;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=['#d4b56a','#62df86','#73a9ff','#b69cff','#2dd4bf'][i%5];p.style.animationDelay=(Math.random()*.9)+'s';p.style.animationDuration=(2.4+Math.random()*.9)+'s';p.style.transform='rotate('+(Math.random()*180)+'deg)';box.appendChild(p)}document.body.appendChild(box);setTimeout(function(){box.remove()},ms)}
 function renderChart(ev){var data=[],labels=[],title='Activity';if(currentTime==='today'){title='Today by hour';var td=new Date().toISOString().slice(0,10);for(var h=0;h<24;h++){var hh=String(h).padStart(2,'0');data.push(ev.filter(function(e){return(e.created_at||'').startsWith(td+'T'+hh)}).length);labels.push(h%6===0?hh+':00':'')}}else if(currentTime==='7d'||currentTime==='30d'){var days=currentTime==='7d'?7:30;title=currentTime==='7d'?'Last 7 days':'Last 30 days';for(var i=days-1;i>=0;i--){var d=new Date(Date.now()-i*864e5),ds=d.toISOString().slice(0,10);data.push(ev.filter(function(e){return(e.created_at||'').startsWith(ds)}).length);labels.push(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]:(i%6===0?d.getDate()+'/'+(d.getMonth()+1):''))}}else{title='All time by week';if(ev.length){var first=new Date(ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)})[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));for(var w=weeks-1;w>=0;w--){var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=ws&&d<we}).length);labels.push(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''))}}}qs('activityTitle').textContent=title;var mx=Math.max.apply(null,data)||1;qs('activityChart').innerHTML=data.length?data.map(function(v,i){return'<div class="bar-wrap"><div class="bar-num">'+(v||'')+'</div><div class="bar" style="height:'+Math.max(3,Math.round(v/mx*165))+'px"></div><div class="bar-lbl">'+labels[i]+'</div></div>'}).join(''):'<div class="empty">No data yet</div>'}
 	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100);rows+='<div class="row"><div><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill" style="width:'+w+'%"></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
 function renderOverviewEvents(ev){var rc=ev.slice(0,4);qs('overviewEvents').innerHTML=rc.length?rc.map(eventRowMini).join(''):'<div class="empty">No events</div>'}
