@@ -224,7 +224,7 @@ textarea.field{min-height:92px;resize:vertical}
   .form-row{grid-template-columns:1fr}
   .status{text-align:left}
   .topbar{display:block;margin-bottom:10px}
-  .quickbar{display:grid;grid-template-columns:repeat(3,1fr);margin:0 0 12px}
+  .quickbar{display:grid;grid-template-columns:repeat(2,1fr);margin:0 0 12px}
   .quickbar .ghost{width:100%;text-align:center}
   .desktop-tab{display:none}
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -251,6 +251,7 @@ body.desktop-mode .tab{width:auto}
     <div id="pinBox" class="stack hide">
       <input id="pinInput" class="field" type="password" placeholder="Enter local password" onkeydown="if(event.key==='Enter')pinLogin()"/>
       <button class="primary" onclick="pinLogin()">Unlock</button>
+      <button id="bioLoginBtn" class="ghost hide" onclick="biometricLogin()">Unlock with Face ID / Touch ID</button>
       <button class="ghost" onclick="resetLogin()">Reset saved key</button>
     </div>
     <div id="loginError" class="error"></div>
@@ -271,6 +272,7 @@ body.desktop-mode .tab{width:auto}
   <div class="quickbar">
     <button id="modeBtn" class="ghost" onclick="toggleDisplayMode()">Mobile mode</button>
     <button id="soundBtn" class="ghost" onclick="toggleSound()">Sound off</button>
+    <button id="bioBtn" class="ghost" onclick="toggleBiometric()">Enable biometric</button>
     <button class="ghost" onclick="exportDashboardData()">Export</button>
   </div>
 
@@ -483,16 +485,18 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function headers(){return{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json'}}
 function toast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},2400)}
 function apiError(r,label){toast((label||'Request')+' failed: HTTP '+r.status)}
+function bytesToB64(bytes){var s='';bytes=new Uint8Array(bytes);for(var i=0;i<bytes.length;i++)s+=String.fromCharCode(bytes[i]);return btoa(s)}
+function b64ToBytes(b64){return Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)})}
 function monthKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function monthEvents(){var k=monthKey();return uniqueEvents(allEvents).filter(function(e){return(e.created_at||'').slice(0,7)===k&&(currentApp==='all'||e.app===currentApp)})}
 async function deriveKey(pw,salt){var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encryptStr(text,pw){var salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await deriveKey(pw,salt),enc=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(text)),out=new Uint8Array(28+new Uint8Array(enc).length);out.set(salt);out.set(iv,16);out.set(new Uint8Array(enc),28);return btoa(String.fromCharCode.apply(null,out))}
 async function decryptStr(b64,pw){try{var b=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)}),key=await deriveKey(pw,b.slice(0,16)),dec=await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(16,28)},key,b.slice(28));return new TextDecoder().decode(dec)}catch(e){return null}}
-function init(){applyDisplayMode();applySoundMode();if(localStorage.getItem('sb_enc_v1')){qs('setupBox').classList.add('hide');qs('pinBox').classList.remove('hide')}}
+function init(){applyDisplayMode();applySoundMode();applyBioMode();if(localStorage.getItem('sb_enc_v1')){qs('setupBox').classList.add('hide');qs('pinBox').classList.remove('hide')}}
 async function firstLogin(){var key=qs('keyInput').value.trim(),pw=qs('pinSetup').value.trim();if(!key||!pw)return;if(pw.length<4){qs('loginError').textContent='Password must be at least 4 characters';return}SK=key;if(await loadAll()){localStorage.setItem('sb_enc_v1',await encryptStr(key,pw));unlock()}else SK=''}
 async function pinLogin(){var pw=qs('pinInput').value.trim(),enc=localStorage.getItem('sb_enc_v1');var key=await decryptStr(enc,pw);if(!key){qs('loginError').textContent='Wrong password';return}SK=key;if(await loadAll())unlock();else{SK='';qs('loginError').textContent='Key decrypted but connection failed'}}
-function resetLogin(){localStorage.removeItem('sb_enc_v1');location.reload()}
-function unlock(){qs('login').style.display='none';qs('shell').style.display='block';applyDisplayMode();applySoundMode();enforceMobileTabs();initRealtime()}
+function resetLogin(){localStorage.removeItem('sb_enc_v1');disableBiometric();location.reload()}
+function unlock(){qs('login').style.display='none';qs('shell').style.display='block';applyDisplayMode();applySoundMode();applyBioMode();enforceMobileTabs();initRealtime()}
 function initRealtime(){try{sbClient=window.supabase.createClient(SB,SK);rtChannel=sbClient.channel('events-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'events'},function(p){allEvents.unshift(p.new);renderAll();checkNew()}).subscribe(function(s){qs('rtDot').className='dot '+(s==='SUBSCRIBED'?'on':'')})}catch(e){}}
 function loadFxRates(){return fetch('https://api.frankfurter.dev/v1/latest?base=USD').then(function(r){return r.json()}).then(function(d){fxRates=d.rates||{}}).catch(function(){fxRates={EUR:.92,GBP:.79,TRY:38.5,BRL:5.6,MXN:19.5,INR:85,IDR:16200,CAD:1.37,AUD:1.55,JPY:155}})}
 function toUSD(p,c){if(!p)return 0;var n=parseFloat(p);if(!c||c==='USD')return n;return fxRates[c]?n/fxRates[c]:n}
@@ -511,6 +515,14 @@ function applyDisplayMode(){var m=displayMode();document.body.classList.toggle('
 function toggleDisplayMode(){var next=displayMode()==='mobile'?'desktop':'mobile';localStorage.setItem('dashboard_display_mode',next);applyDisplayMode();enforceMobileTabs();toast(next==='mobile'?'Mobile mode':'Desktop mode')}
 function enforceMobileTabs(){if(isMobileMode()&&['metadata','campaigns','storage'].indexOf(currentTab)>=0){switchTab('overview',document.querySelector("button[onclick*=\"overview\"]"))}}
 window.addEventListener('resize',enforceMobileTabs)
+function bioSupported(){return !!(navigator.credentials&&window.PublicKeyCredential)}
+function bioEnabled(){return !!(localStorage.getItem('bio_cred_id_v1')&&localStorage.getItem('sb_bio_enc_v1')&&localStorage.getItem('sb_bio_secret_v1'))}
+function applyBioMode(){var login=qs('bioLoginBtn'),btn=qs('bioBtn'),ok=bioSupported(),on=bioEnabled();if(login)login.classList.toggle('hide',!(ok&&on));if(btn){btn.classList.toggle('hide',!ok);btn.textContent=on?'Disable biometric':'Enable biometric'}}
+function bioChallenge(){return crypto.getRandomValues(new Uint8Array(32))}
+async function enableBiometric(){if(!bioSupported()){toast('Biometric login not supported');return}if(!SK){toast('Unlock with password first');return}try{var user=crypto.getRandomValues(new Uint8Array(16));var cred=await navigator.credentials.create({publicKey:{challenge:bioChallenge(),rp:{name:'Indie Analytics'},user:{id:user,name:'owner@local',displayName:'Dashboard Owner'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}});var secret=bytesToB64(crypto.getRandomValues(new Uint8Array(32)));localStorage.setItem('bio_cred_id_v1',bytesToB64(cred.rawId));localStorage.setItem('sb_bio_secret_v1',secret);localStorage.setItem('sb_bio_enc_v1',await encryptStr(SK,secret));applyBioMode();toast('Biometric enabled')}catch(e){toast('Biometric setup failed')}}
+function disableBiometric(){localStorage.removeItem('bio_cred_id_v1');localStorage.removeItem('sb_bio_secret_v1');localStorage.removeItem('sb_bio_enc_v1');applyBioMode()}
+function toggleBiometric(){if(bioEnabled()){if(confirm('Disable biometric login?')){disableBiometric();toast('Biometric disabled')}}else enableBiometric()}
+async function biometricLogin(){if(!bioSupported()||!bioEnabled()){toast('Biometric login unavailable');return}try{var credId=b64ToBytes(localStorage.getItem('bio_cred_id_v1'));await navigator.credentials.get({publicKey:{challenge:bioChallenge(),allowCredentials:[{type:'public-key',id:credId}],userVerification:'required',timeout:60000}});var key=await decryptStr(localStorage.getItem('sb_bio_enc_v1'),localStorage.getItem('sb_bio_secret_v1'));if(!key){toast('Biometric key failed');return}SK=key;if(await loadAll())unlock();else{SK='';qs('loginError').textContent='Biometric unlock worked, but Supabase connection failed'}}catch(e){toast('Biometric unlock failed')}}
 function soundEnabled(){return localStorage.getItem('dashboard_sound_enabled')==='1'}
 function applySoundMode(){var b=qs('soundBtn');if(b)b.textContent=soundEnabled()?'Sound on':'Sound off'}
 function toggleSound(){var on=!soundEnabled();localStorage.setItem('dashboard_sound_enabled',on?'1':'0');applySoundMode();if(on){unlockAudio();playNotifySound('test');toast('Sound on')}else toast('Sound off')}
