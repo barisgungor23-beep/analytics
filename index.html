@@ -245,6 +245,7 @@ textarea.field{min-height:92px;resize:vertical}
     <div class="status">
       <div>Realtime <span id="rtDot" class="dot"></span></div>
       <div id="lastUpdated">Not loaded</div>
+      <button class="ghost" style="margin-top:10px" onclick="exportDashboardData()">Export</button>
     </div>
   </div>
 
@@ -481,6 +482,96 @@ function loadFiles(){fetch(SB+'/storage/v1/object/list/files',{method:'POST',hea
 function loadSubFolder(folder){fetch(SB+'/storage/v1/object/list/files',{method:'POST',headers:headers(),body:JSON.stringify({prefix:folder+'/',limit:500,sortBy:{column:'created_at',order:'desc'}})}).then(function(r){return r.json()}).then(function(d){(Array.isArray(d)?d:[]).forEach(function(f){if(f.name&&f.id!==null)allFiles.push({name:f.name,folder:folder,size:f.metadata?f.metadata.size:0,created:f.created_at||f.updated_at})});renderFiles()})}
 function handleUpload(files){var folder=qs('uploadFolder').value;if(!files||!files.length)return;Array.from(files).forEach(function(file){var path=folder?folder+'/'+file.name:file.name;fetch(SB+'/storage/v1/object/files/'+encodeURIComponent(path),{method:'POST',headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file}).then(function(r){if(r.ok){toast('Uploaded '+file.name);loadFiles()}else toast('Upload failed')})})}
 function renderFiles(){var total=allFiles.reduce(function(s,f){return s+(f.size||0)},0);qs('storageUsage').textContent=(total/1048576).toFixed(1)+' MB used';qs('fileList').innerHTML=allFiles.length?allFiles.map(function(f){return'<div class="row"><div><div class="row-main">'+esc(f.name)+'</div><div class="row-sub">'+esc(f.folder||'root')+' · '+((f.size||0)/1024).toFixed(1)+' KB</div></div></div>'}).join(''):'<div class="empty">No files</div>'}
+function exportDashboardData(){
+  var ev=filtered(),s=summary(ev);
+  var appFiltered=currentApp==='all'?function(){return true}:function(x){return x.app===currentApp};
+  var report={
+    exported_at:new Date().toISOString(),
+    filter:{app:currentApp,time:currentTime},
+    summary:{
+      downloads:s.dl.length,
+      newDownloads:s.dl.filter(function(e){return e.source!=='update'}).length,
+      updates:s.dl.filter(function(e){return e.source==='update'}).length,
+      purchases:s.pr.length,
+      paidPurchases:s.paid.length,
+      offerCodes:s.code.length,
+      revenueUSD:Math.round(s.rev*100)/100,
+      proceedsUSD:Math.round(s.rev*.85*100)/100,
+      conversion:s.dl.length?Math.round(s.pr.length/s.dl.length*1000)/10+'%':'0%',
+      arpu:s.dl.length?'$'+(s.rev/s.dl.length).toFixed(2):'$0.00'
+    },
+    localeBreakdown:buildLocaleExport(ev),
+    appBreakdown:buildAppExport(),
+    events:ev,
+    metadata:allMetadata.filter(appFiltered),
+    campaigns:allCampaigns.filter(function(c){return currentApp==='all'||c.app===currentApp||c.app==='all'}),
+    notes:allNotes
+  };
+  var text=JSON.stringify(report,null,2);
+  if(navigator.clipboard&&document.hasFocus()){
+    navigator.clipboard.writeText(text).then(function(){toast('Export copied')}).catch(function(){showExportBox(text)});
+  }else{
+    showExportBox(text);
+  }
+}
+function buildLocaleExport(ev){
+  var map={};
+  ev.forEach(function(e){
+    var l=(e.locale||'unknown').toLowerCase();
+    if(!map[l])map[l]={downloads:0,purchases:0,paidPurchases:0,offerCodes:0,revenueUSD:0};
+    if(e.event==='download')map[l].downloads++;
+    if(e.event==='purchase'){
+      map[l].purchases++;
+      if(e.source==='offerCode')map[l].offerCodes++;
+      else{map[l].paidPurchases++;map[l].revenueUSD+=toUSD(e.price,e.currency)}
+    }
+  });
+  return Object.keys(map).sort().map(function(k){
+    var x=map[k];
+    x.locale=k;
+    x.revenueUSD=Math.round(x.revenueUSD*100)/100;
+    x.conversion=x.downloads?Math.round(x.purchases/x.downloads*1000)/10+'%':'0%';
+    return x;
+  });
+}
+function buildAppExport(){
+  return ['personalcapsule','yula','appconsol'].map(function(app){
+    var ev=allEvents.filter(function(e){return e.app===app}),s=summary(ev);
+    return{
+      app:app,
+      downloads:s.dl.length,
+      purchases:s.pr.length,
+      paidPurchases:s.paid.length,
+      offerCodes:s.code.length,
+      revenueUSD:Math.round(s.rev*100)/100,
+      proceedsUSD:Math.round(s.rev*.85*100)/100,
+      conversion:s.dl.length?Math.round(s.pr.length/s.dl.length*1000)/10+'%':'0%'
+    };
+  });
+}
+function showExportBox(text){
+  var old=qs('exportBox');if(old)old.remove();
+  var box=document.createElement('div');
+  box.id='exportBox';
+  box.style.cssText='position:fixed;inset:18px;z-index:999999;background:#0b0b0b;border:1px solid #333;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 90px rgba(0,0,0,.75)';
+  box.innerHTML='<div><div style="color:#d4b56a;font-weight:800;font-size:17px">Export</div><div style="color:#777;font-size:12px;margin-top:4px">Clipboard izin vermezse aşağıdaki JSON metnini seçip kopyala.</div></div>';
+  var area=document.createElement('textarea');
+  area.value=text;
+  area.style.cssText='flex:1;background:#111;color:#eee;border:1px solid #333;border-radius:12px;padding:12px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;resize:none;white-space:pre';
+  var actions=document.createElement('div');
+  actions.style.cssText='display:flex;gap:8px;justify-content:flex-end';
+  var select=document.createElement('button');
+  select.className='primary';
+  select.textContent='Select all';
+  select.onclick=function(){area.focus();area.select()};
+  var close=document.createElement('button');
+  close.className='ghost';
+  close.textContent='Close';
+  close.onclick=function(){box.remove()};
+  actions.appendChild(select);actions.appendChild(close);
+  box.appendChild(area);box.appendChild(actions);document.body.appendChild(box);
+  area.focus();area.select();
+}
 setInterval(function(){if(SK)loadAll()},60000);
 init();
 </script>
