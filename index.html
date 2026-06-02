@@ -232,15 +232,16 @@ textarea.field{min-height:92px;resize:vertical}
   .quickbar .ghost{width:100%;text-align:center}
   .quickbar .sub{grid-column:1/-1;text-align:center}
   .desktop-tab{display:none}
-  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  #tabsMenu:not(.hide){display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .tab{width:100%;text-align:center;padding:11px 8px}
 }
 body.mobile-mode .desktop-tab{display:none!important}
-body.mobile-mode .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+body.mobile-mode #tabsMenu:not(.hide){display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 body.mobile-mode .tab{width:100%;text-align:center}
 body.desktop-mode .desktop-tab{display:inline-flex!important}
-body.desktop-mode .tabs{display:flex!important}
+body.desktop-mode #tabsMenu:not(.hide){display:flex!important}
 body.desktop-mode .tab{width:auto}
+#tabsMenu.hide,#quickbar.hide{display:none!important}
 </style>
 </head>
 <body>
