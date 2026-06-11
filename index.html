@@ -5,30 +5,34 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Indie Analytics"/>
-<title>Indie Analytics</title>
+<meta name="apple-mobile-web-app-title" content="Barış Dashboard"/>
+<title>Barış Dashboard</title>
 <style>
 :root{
-  --bg:#161820;
-  --panel:#1e212a;
-  --panel2:#23262f;
-  --panel3:#2c303a;
-  --line:#373c47;
-  --muted:#8b919d;
-  --soft:#b0b6c2;
-  --text:#f2f4f7;
-  --gold:#e2c47d;
-  --blue:#82b4ff;
-  --green:#6fe79b;
-  --purple:#c4aeff;
-  --red:#fb8a8a;
-  --teal:#3bdcc8;
+  --bg:#0e1015;
+  --panel:#161922;
+  --panel2:#161a22;
+  --panel3:#1f2430;
+  --line:#2a303c;
+  --muted:#8894a6;
+  --soft:#aab4c2;
+  --text:#f3f6fa;
+  --gold:#f3c95c;
+  --blue:#5fa8ff;
+  --green:#46e08a;
+  --purple:#bb9bff;
+  --red:#ff7b7b;
+  --teal:#2ee0cc;
   --radius:18px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{
   min-height:100vh;
-  background:var(--bg);
+  background:
+    radial-gradient(1100px 620px at 82% -12%,rgba(95,168,255,.10),transparent 60%),
+    radial-gradient(900px 560px at -8% 112%,rgba(243,201,92,.08),transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,system-ui,sans-serif;
   padding:18px;
@@ -55,7 +59,7 @@ button{cursor:pointer}
 .login-card p{font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:20px}
 .field{
   width:100%;
-  background:#1a1d25;
+  background:#12151d;
   border:1px solid var(--line);
   border-radius:14px;
   color:var(--text);
@@ -66,11 +70,12 @@ button{cursor:pointer}
 .stack{display:flex;flex-direction:column;gap:10px}
 .primary{
   background:var(--gold);
-  color:#090909;
+  color:#0e1015;
   border:none;
   border-radius:14px;
   padding:13px 16px;
   font-weight:750;
+  box-shadow:0 6px 22px rgba(243,201,92,.28);
 }
 .ghost{
   background:transparent;
@@ -94,20 +99,20 @@ button{cursor:pointer}
   margin-bottom:18px;
 }
 .brand{display:flex;align-items:center;gap:10px}
-.brand h1{font-size:30px;color:var(--gold);line-height:1.05}
+.brand h1{font-size:30px;color:var(--gold);line-height:1.05;text-shadow:0 0 22px rgba(243,201,92,.3)}
 .brand p{font-size:13px;color:var(--muted);margin-top:7px}
 .status{font-size:12px;color:var(--muted);text-align:right;padding-top:7px}
 .header-actions{display:flex;align-items:center;gap:10px;justify-content:flex-end}
 .quickbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:-8px 0 14px}
 .quickbar .ghost{padding:9px 12px}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:6px}
-.dot.on{background:var(--green)}
+.dot.on{background:var(--green);box-shadow:0 0 9px rgba(70,224,138,.85)}
 .tabs{
   display:flex;
   gap:8px;
   overflow-x:auto;
   padding-bottom:10px;
-  border-bottom:1px solid #2c303a;
+  border-bottom:1px solid #222837;
   margin-bottom:18px;
   scrollbar-width:none;
 }
@@ -115,14 +120,14 @@ button{cursor:pointer}
 .tab{
   flex:0 0 auto;
   border:none;
-  background:#272b34;
-  color:#9aa1ad;
+  background:#1a1e28;
+  color:#9aa3b2;
   padding:10px 14px;
   border-radius:999px;
   font-size:13px;
   font-weight:700;
 }
-.tab.active{background:var(--gold);color:#090909}
+.tab.active{background:var(--gold);color:#0e1015;box-shadow:0 0 16px rgba(243,201,92,.3)}
 .filters{
   display:flex;
   justify-content:space-between;
@@ -135,28 +140,28 @@ button{cursor:pointer}
 .seg button{
   flex:0 0 auto;
   border:none;
-  background:#272b34;
-  color:#9aa1ad;
+  background:#1a1e28;
+  color:#9aa3b2;
   padding:8px 12px;
   border-radius:10px;
   font-size:12px;
   font-weight:700;
 }
-.seg button.active{background:#343945;color:var(--text)}
+.seg button.active{background:#2a303d;color:var(--text)}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
 .card{
-  background:var(--panel2);
+  background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--panel2);
   border:1px solid var(--line);
   border-radius:var(--radius);
   padding:18px;
 }
-.label{font-size:11px;color:#8e95a1;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
-.value{font-size:38px;line-height:1.05;font-weight:800;margin-top:12px}
+.label{font-size:11px;color:#8a93a3;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+.value{font-size:38px;line-height:1.05;font-weight:800;margin-top:12px;text-shadow:0 0 26px rgba(255,255,255,.10)}
 .sub{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
 .blue{color:var(--blue)}.green{color:var(--green)}.gold{color:var(--gold)}.purple{color:var(--purple)}.teal{color:var(--teal)}
 .layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:12px;margin-bottom:12px}
 .section{
-  background:var(--panel2);
+  background:linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,0) 38%),var(--panel2);
   border:1px solid var(--line);
   border-radius:22px;
   padding:20px;
@@ -168,24 +173,24 @@ button{cursor:pointer}
 .bars{height:210px;display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);padding-top:16px}
 .bar-wrap{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px}
 .bar-num{height:12px;font-size:9px;color:#8a909c}
-.bar{width:100%;min-height:3px;background:var(--blue);border-radius:5px 5px 0 0}
-.bar.rev{background:var(--gold)}
+.bar{width:100%;min-height:3px;background:var(--blue);border-radius:5px 5px 0 0;box-shadow:0 0 10px rgba(95,168,255,.45)}
+.bar.rev{background:var(--gold);box-shadow:0 0 10px rgba(243,201,92,.5)}
 .bar-lbl{font-size:8px;color:#6d7480;white-space:nowrap;overflow:hidden;max-width:100%}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #2c303a;padding:12px 0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #222837;padding:12px 0}
 .row:last-child{border-bottom:none}
-.row-main{font-size:14px;color:#e6e8ec}
+.row-main{font-size:14px;color:#e8ebf0}
 .row-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
-.row-sub b{color:#c3c8d1}
-.pill{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:5px 8px;background:#2e333d;color:#aeb4c0}
-.pill.download{background:#122a44;color:var(--blue)}
-.pill.purchase{background:#143a20;color:var(--green)}
-.pill.code{background:#463818;color:var(--gold)}
-.pill.update{background:#2d2552;color:var(--purple)}
-.progress{height:8px;background:#2f343e;border-radius:999px;overflow:hidden;margin-top:10px}
-.fill{height:100%;border-radius:999px;background:var(--gold)}
+.row-sub b{color:#c6ccd6}
+.pill{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:5px 8px;background:#232a36;color:#b6bfcd}
+.pill.download{background:#11294a;color:var(--blue)}
+.pill.purchase{background:#0f3a22;color:var(--green)}
+.pill.code{background:#4a3a12;color:var(--gold)}
+.pill.update{background:#2c2356;color:var(--purple)}
+.progress{height:8px;background:#242a36;border-radius:999px;overflow:hidden;margin-top:10px}
+.fill{height:100%;border-radius:999px;background:var(--gold);box-shadow:0 0 14px rgba(243,201,92,.5)}
 .table{width:100%;border-collapse:collapse}
-.table th{font-size:11px;color:#838b97;text-align:left;border-bottom:1px solid var(--line);padding:9px 0;text-transform:uppercase;letter-spacing:.05em}
-.table td{font-size:13px;color:#dee1e7;border-bottom:1px solid #2c303a;padding:12px 0;vertical-align:top}
+.table th{font-size:11px;color:#8893a2;text-align:left;border-bottom:1px solid var(--line);padding:9px 0;text-transform:uppercase;letter-spacing:.05em}
+.table td{font-size:13px;color:#e4e8ef;border-bottom:1px solid #222837;padding:12px 0;vertical-align:top}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -205,11 +210,11 @@ textarea.field{min-height:92px;resize:vertical}
 @keyframes fall{0%{opacity:1}72%{opacity:1}to{transform:translateY(112vh) rotate(780deg);opacity:.18}}
 .toast{
   position:fixed;top:18px;left:50%;transform:translateX(-50%);
-  background:#1e212a;border:1px solid var(--line);color:var(--text);
+  background:#161a22;border:1px solid var(--line);color:var(--text);
   border-radius:14px;padding:12px 16px;font-size:13px;font-weight:750;
   z-index:99;box-shadow:0 14px 40px rgba(0,0,0,.45)
 }
-.empty{color:#79808c;font-size:13px;padding:18px;text-align:center}
+.empty{color:#6f7785;font-size:13px;padding:18px;text-align:center}
 .muted{color:var(--muted)}
 .right{text-align:right}
 .hide{display:none!important}
@@ -251,7 +256,7 @@ body.desktop-mode .tab{width:auto}
 <body>
 <div id="login" class="login">
   <div class="login-card">
-    <h1>Indie Analytics</h1>
+    <h1>Barış Dashboard</h1>
     <p>Private dashboard for high-level app business metrics. Enter your Supabase service key once, then unlock with your local password.</p>
     <div id="setupBox" class="stack">
       <input id="keyInput" class="field" type="password" placeholder="Supabase service role key"/>
@@ -272,7 +277,7 @@ body.desktop-mode .tab{width:auto}
   <div class="topbar">
     <div class="brand">
       <button id="tabsBtn" class="ghost" onclick="toggleTabs()">Tabs</button>
-      <h1>Indie Analytics</h1>
+      <h1>Barış Dashboard</h1>
     </div>
     <div class="header-actions">
       <div class="status">Realtime <span id="rtDot" class="dot"></span></div>
@@ -535,7 +540,7 @@ function bioSupported(){return !!(navigator.credentials&&window.PublicKeyCredent
 function bioEnabled(){return !!(localStorage.getItem('bio_cred_id_v1')&&localStorage.getItem('sb_bio_enc_v1')&&localStorage.getItem('sb_bio_secret_v1'))}
 function applyBioMode(){var login=qs('bioLoginBtn'),btn=qs('bioBtn'),ok=bioSupported(),on=bioEnabled();if(login)login.classList.toggle('hide',!(ok&&on));if(btn){btn.classList.toggle('hide',!ok);btn.textContent=on?'Disable biometric':'Enable biometric'}}
 function bioChallenge(){return crypto.getRandomValues(new Uint8Array(32))}
-async function enableBiometric(){if(!bioSupported()){toast('Biometric login not supported');return}if(!SK){toast('Unlock with password first');return}try{var user=crypto.getRandomValues(new Uint8Array(16));var cred=await navigator.credentials.create({publicKey:{challenge:bioChallenge(),rp:{name:'Indie Analytics'},user:{id:user,name:'owner@local',displayName:'Dashboard Owner'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}});var secret=bytesToB64(crypto.getRandomValues(new Uint8Array(32)));localStorage.setItem('bio_cred_id_v1',bytesToB64(cred.rawId));localStorage.setItem('sb_bio_secret_v1',secret);localStorage.setItem('sb_bio_enc_v1',await encryptStr(SK,secret));applyBioMode();toast('Biometric enabled')}catch(e){toast('Biometric setup failed')}}
+async function enableBiometric(){if(!bioSupported()){toast('Biometric login not supported');return}if(!SK){toast('Unlock with password first');return}try{var user=crypto.getRandomValues(new Uint8Array(16));var cred=await navigator.credentials.create({publicKey:{challenge:bioChallenge(),rp:{name:'Barış Dashboard'},user:{id:user,name:'owner@local',displayName:'Dashboard Owner'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}});var secret=bytesToB64(crypto.getRandomValues(new Uint8Array(32)));localStorage.setItem('bio_cred_id_v1',bytesToB64(cred.rawId));localStorage.setItem('sb_bio_secret_v1',secret);localStorage.setItem('sb_bio_enc_v1',await encryptStr(SK,secret));applyBioMode();toast('Biometric enabled')}catch(e){toast('Biometric setup failed')}}
 function disableBiometric(){localStorage.removeItem('bio_cred_id_v1');localStorage.removeItem('sb_bio_secret_v1');localStorage.removeItem('sb_bio_enc_v1');applyBioMode()}
 function toggleBiometric(){if(bioEnabled()){if(confirm('Disable biometric login?')){disableBiometric();toast('Biometric disabled')}}else enableBiometric()}
 async function biometricLogin(){if(!bioSupported()||!bioEnabled()){toast('Biometric login unavailable');return}try{var credId=b64ToBytes(localStorage.getItem('bio_cred_id_v1'));await navigator.credentials.get({publicKey:{challenge:bioChallenge(),allowCredentials:[{type:'public-key',id:credId}],userVerification:'required',timeout:60000}});var key=await decryptStr(localStorage.getItem('sb_bio_enc_v1'),localStorage.getItem('sb_bio_secret_v1'));if(!key){toast('Biometric key failed');return}SK=key;if(await loadAll())unlock();else{SK='';qs('loginError').textContent='Biometric unlock worked, but Supabase connection failed'}}catch(e){toast('Biometric unlock failed')}}
@@ -546,7 +551,7 @@ function unlockAudio(){try{var C=window.AudioContext||window.webkitAudioContext;
 function playTone(freq,start,dur,vol,type){if(!audioCtx)return;var osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type=type||'triangle';osc.frequency.value=freq;gain.gain.setValueAtTime(0.0001,start);gain.gain.exponentialRampToValueAtTime(vol,start+.018);gain.gain.exponentialRampToValueAtTime(0.0001,start+dur);osc.connect(gain);gain.connect(audioCtx.destination);osc.start(start);osc.stop(start+dur+.04)}
 function playNoise(start,dur,vol){if(!audioCtx)return;var len=Math.max(1,Math.floor(audioCtx.sampleRate*dur)),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buf.getChannelData(0);for(var i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);var src=audioCtx.createBufferSource(),gain=audioCtx.createGain();src.buffer=buf;gain.gain.setValueAtTime(vol,start);gain.gain.exponentialRampToValueAtTime(.0001,start+dur);src.connect(gain);gain.connect(audioCtx.destination);src.start(start);src.stop(start+dur)}
 function playNotifySound(kind){if(!soundEnabled())return;unlockAudio();if(!audioCtx)return;var t=audioCtx.currentTime,vol=.52;if(kind==='revenue'||kind==='purchase'){playTone(659,t,.16,vol,'triangle');playTone(880,t+.14,.18,vol*.92,'triangle');playTone(1108,t+.29,.2,vol*.82,'triangle');playTone(1479,t+.47,.28,vol*.72,'sine');playNoise(t+.06,.32,.09)}else if(kind==='update'){playTone(523,t,.14,vol*.86,'triangle');playTone(659,t+.13,.16,vol*.8,'triangle');playTone(784,t+.27,.2,vol*.74,'triangle');playNoise(t+.05,.22,.07)}else{playTone(587,t,.14,vol*.9,'triangle');playTone(784,t+.13,.17,vol*.86,'triangle');playTone(1046,t+.29,.24,vol*.76,'triangle');playNoise(t+.05,.26,.08)}}
-function flashTitle(msg){if(titleFlashTimer)clearInterval(titleFlashTimer);var n=0;titleFlashTimer=setInterval(function(){document.title=n%2?'Indie Analytics':'New '+msg;n++;if(n>10){clearInterval(titleFlashTimer);titleFlashTimer=null;document.title=baseTitle}},900)}
+function flashTitle(msg){if(titleFlashTimer)clearInterval(titleFlashTimer);var n=0;titleFlashTimer=setInterval(function(){document.title=n%2?'Barış Dashboard':'New '+msg;n++;if(n>10){clearInterval(titleFlashTimer);titleFlashTimer=null;document.title=baseTitle}},900)}
 document.addEventListener('visibilitychange',function(){if(soundEnabled())unlockAudio()})
 window.addEventListener('focus',function(){if(soundEnabled())unlockAudio()})
 window.addEventListener('pointerdown',function(){if(soundEnabled())unlockAudio()},{passive:true})
@@ -580,8 +585,8 @@ function importMetadata(){try{var json=JSON.parse(qs('metaJsonInput').value.trim
 	function metadataVersions(){var base=uniqueEvents(allEvents),sorted=allMetadata.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),groups=[];sorted.forEach(function(m){var ts=new Date(m.created_at).getTime(),g=groups.find(function(x){return x.app===m.app&&Math.abs(new Date(x.created_at).getTime()-ts)<60000});if(g)g.locales.push(m);else groups.push({app:m.app,created_at:m.created_at,locales:[m]})});groups.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});return groups.map(function(g,i,arr){var start=new Date(g.created_at),end=i===0?new Date():new Date(arr[i-1].created_at),ev=base.filter(function(e){var d=new Date(e.created_at);return e.app===g.app&&d>=start&&d<end}),s=summary(ev),days=Math.max(1,Math.ceil((end-start)/864e5));return{g:g,start:start,end:end,s:s,days:days,active:i===0}})}
 function renderMetadata(){var versions=metadataVersions();qs('latestMetadata').innerHTML=versions.length?metaSmall(versions[0]):'<div class="empty">No metadata entries</div>';qs('metadataTimeline').innerHTML=versions.length?versions.map(metaCard).join(''):'<div class="empty">No metadata entries</div>';renderLocaleImpact(versions);qs('versionPerformance').innerHTML=versions.slice(0,5).map(function(v,i){return'<div class="row"><div><div class="row-main">v'+(versions.length-i)+' · '+esc(v.g.app)+' '+(v.active?'· active':'')+'</div><div class="row-sub">'+v.days+' days · '+v.s.dl.length+' downloads</div></div><div class="right"><div class="row-main gold">$'+v.s.rev.toFixed(2)+'</div><div class="row-sub">$'+(v.s.rev/v.days).toFixed(2)+'/day</div></div></div>'}).join('')||'<div class="empty">No data</div>'}
 function metaSmall(v){return'<div class="row"><div><div class="row-main">'+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+' revenue · '+v.days+' days</div></div></div>'}
-function metaCard(v){var ids=v.g.locales.map(function(l){return l.id}).filter(Boolean).join(','),panel='meta-detail-'+ids.replace(/,/g,'-');return'<div class="row" style="display:block"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div class="row-main">'+(v.active?'<span class="pill code">active</span> ':'')+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.start.toLocaleDateString('tr-TR')+' -> '+(v.active?'now':v.end.toLocaleDateString('tr-TR'))+' · '+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+'</div></div><div class="mini-actions"><div class="right"><div class="row-main blue">'+(v.s.dl.length/v.days).toFixed(1)+'</div><div class="row-sub">dl/day</div></div><button class="ghost" onclick="toggleMetaDetail(\''+panel+'\')">View</button><button class="ghost danger" onclick="deleteMetadataGroup(\''+ids+'\')">Delete</button></div></div><div id="'+panel+'" class="hide" style="margin-top:14px;border-top:1px solid #343945;padding-top:12px">'+metaDetail(v.g.locales)+'</div></div>'}
-function metaDetail(locales){return locales.map(function(l){return'<div style="padding:12px 0;border-bottom:1px solid #2c303a"><div class="row-main gold">'+esc(l.locale||'unknown')+'</div><div class="row-sub"><b>Title:</b> '+esc(l.title||'-')+'</div><div class="row-sub"><b>Subtitle:</b> '+esc(l.subtitle||'-')+'</div><div class="row-sub"><b>Keywords:</b> '+esc(l.keywords||'-')+'</div>'+(l.notes?'<div class="row-sub"><b>Notes:</b> '+esc(l.notes)+'</div>':'')+'</div>'}).join('')}
+function metaCard(v){var ids=v.g.locales.map(function(l){return l.id}).filter(Boolean).join(','),panel='meta-detail-'+ids.replace(/,/g,'-');return'<div class="row" style="display:block"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div class="row-main">'+(v.active?'<span class="pill code">active</span> ':'')+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.start.toLocaleDateString('tr-TR')+' -> '+(v.active?'now':v.end.toLocaleDateString('tr-TR'))+' · '+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+'</div></div><div class="mini-actions"><div class="right"><div class="row-main blue">'+(v.s.dl.length/v.days).toFixed(1)+'</div><div class="row-sub">dl/day</div></div><button class="ghost" onclick="toggleMetaDetail(\''+panel+'\')">View</button><button class="ghost danger" onclick="deleteMetadataGroup(\''+ids+'\')">Delete</button></div></div><div id="'+panel+'" class="hide" style="margin-top:14px;border-top:1px solid #2a303d;padding-top:12px">'+metaDetail(v.g.locales)+'</div></div>'}
+function metaDetail(locales){return locales.map(function(l){return'<div style="padding:12px 0;border-bottom:1px solid #222837"><div class="row-main gold">'+esc(l.locale||'unknown')+'</div><div class="row-sub"><b>Title:</b> '+esc(l.title||'-')+'</div><div class="row-sub"><b>Subtitle:</b> '+esc(l.subtitle||'-')+'</div><div class="row-sub"><b>Keywords:</b> '+esc(l.keywords||'-')+'</div>'+(l.notes?'<div class="row-sub"><b>Notes:</b> '+esc(l.notes)+'</div>':'')+'</div>'}).join('')}
 function toggleMetaDetail(id){var el=qs(id);if(el)el.classList.toggle('hide')}
 function deleteMetadataGroup(ids){var list=String(ids||'').split(',').filter(Boolean);if(!list.length)return;if(!confirm('Delete this metadata entry?'))return;fetch(SB+'/rest/v1/metadata_history?id=in.('+list.join(',')+')',{method:'DELETE',headers:headers()}).then(function(r){if(r.ok){toast('Metadata deleted');loadAll()}else apiError(r,'Metadata delete')})}
 	function renderLocaleImpact(versions){var map={};uniqueEvents(allEvents).forEach(function(e){var l=(e.locale||'unknown').toLowerCase();if(!map[l])map[l]={dl:0,rev:0,pr:0};if(e.event==='download')map[l].dl++;if(e.event==='purchase'){map[l].pr++;if(hasRevenue(e))map[l].rev+=toUSD(e.price,e.currency)}});var rows=Object.entries(map).sort(function(a,b){return b[1].dl-a[1].dl}).slice(0,8);var max=rows.length?rows[0][1].dl:1;qs('localeImpact').innerHTML=rows.length?rows.map(function(r){return'<div class="row"><div><div class="row-main">'+esc(r[0].toUpperCase())+'</div><div class="row-sub">'+r[1].dl+' downloads · '+r[1].pr+' purchases · $'+r[1].rev.toFixed(2)+'</div><div class="progress"><div class="fill" style="width:'+Math.round(r[1].dl/max*100)+'%"></div></div></div></div>'}).join(''):'<div class="empty">No locale data</div>'}
@@ -691,10 +696,10 @@ function showExportBox(text){
   var box=document.createElement('div');
   box.id='exportBox';
   box.style.cssText='position:fixed;inset:18px;z-index:999999;background:#1b1e26;border:1px solid #373c47;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 90px rgba(0,0,0,.75)';
-  box.innerHTML='<div><div style="color:#d4b56a;font-weight:800;font-size:17px">Export</div><div style="color:#9aa1ad;font-size:12px;margin-top:4px">Clipboard izin vermezse aşağıdaki JSON metnini seçip kopyala.</div></div>';
+  box.innerHTML='<div><div style="color:#d4b56a;font-weight:800;font-size:17px">Export</div><div style="color:#9aa3b2;font-size:12px;margin-top:4px">Clipboard izin vermezse aşağıdaki JSON metnini seçip kopyala.</div></div>';
   var area=document.createElement('textarea');
   area.value=text;
-  area.style.cssText='flex:1;background:#1a1d25;color:#eee;border:1px solid #373c47;border-radius:12px;padding:12px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;resize:none;white-space:pre';
+  area.style.cssText='flex:1;background:#12151d;color:#eee;border:1px solid #373c47;border-radius:12px;padding:12px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;resize:none;white-space:pre';
   var actions=document.createElement('div');
   actions.style.cssText='display:flex;gap:8px;justify-content:flex-end';
   var select=document.createElement('button');
