@@ -2,198 +2,130 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Barış Dashboard"/>
 <title>Barış Dashboard</title>
 <style>
 :root{
-  --bg:#0e1015;
-  --panel:#161922;
-  --panel2:#161a22;
-  --panel3:#1f2430;
-  --line:#2a303c;
-  --muted:#8894a6;
+  --bg:#0c0e13;
+  --panel:#13161d;
+  --panel2:#141821;
+  --line:#222836;
+  --line2:#2c3340;
+  --muted:#8893a4;
   --soft:#aab4c2;
   --text:#f3f6fa;
-  --gold:#f3c95c;
+  --gold:#e6b85c;
+  --gold2:#f3cd72;
   --blue:#5fa8ff;
   --green:#46e08a;
   --purple:#bb9bff;
   --red:#ff7b7b;
-  --teal:#2ee0cc;
-  --radius:18px;
+  --radius:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{
   min-height:100vh;
   background:
-    radial-gradient(1100px 620px at 82% -12%,rgba(95,168,255,.10),transparent 60%),
-    radial-gradient(900px 560px at -8% 112%,rgba(243,201,92,.08),transparent 60%),
+    radial-gradient(1100px 620px at 84% -14%,rgba(95,168,255,.07),transparent 60%),
+    radial-gradient(900px 560px at -8% 112%,rgba(230,184,92,.06),transparent 60%),
     var(--bg);
-  background-attachment:fixed;
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,system-ui,sans-serif;
-  padding:18px;
-  padding-top:max(18px,env(safe-area-inset-top));
-  padding-bottom:max(18px,env(safe-area-inset-bottom));
 }
 button,input,textarea,select{font:inherit}
 button{cursor:pointer}
-.login{
-  min-height:calc(100vh - 36px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.login-card{
-  width:100%;
-  max-width:380px;
-  padding:28px;
-  border:1px solid var(--line);
-  border-radius:24px;
-  background:var(--panel);
-}
-.login-card h1{font-size:28px;color:var(--gold);margin-bottom:8px}
+svg{display:block}
+/* LOGIN */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.login-card{width:100%;max-width:380px;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel)}
+.login-card h1{font-size:26px;color:var(--gold2);margin-bottom:8px;text-shadow:0 0 22px rgba(243,205,114,.25)}
 .login-card p{font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:20px}
-.field{
-  width:100%;
-  background:#12151d;
-  border:1px solid var(--line);
-  border-radius:14px;
-  color:var(--text);
-  padding:13px 14px;
-  outline:none;
-}
-.field:focus{border-color:rgba(212,181,106,.7)}
+.field{width:100%;background:#10131a;border:1px solid var(--line);border-radius:12px;color:var(--text);padding:12px 14px;outline:none}
+.field:focus{border-color:rgba(230,184,92,.6)}
 .stack{display:flex;flex-direction:column;gap:10px}
-.primary{
-  background:var(--gold);
-  color:#0e1015;
-  border:none;
-  border-radius:14px;
-  padding:13px 16px;
-  font-weight:750;
-  box-shadow:0 6px 22px rgba(243,201,92,.28);
-}
-.ghost{
-  background:transparent;
-  color:var(--soft);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:9px 12px;
-  font-size:13px;
-}
-.danger{
-  color:var(--red);
-  border-color:#512020;
-}
+.primary{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#0c0e13;border:none;border-radius:12px;padding:12px 16px;font-weight:750;box-shadow:0 6px 20px rgba(230,184,92,.25)}
+.ghost{background:transparent;color:var(--soft);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;font-size:13px}
+.danger{color:var(--red);border-color:#512528}
 .error{font-size:13px;color:var(--red);margin-top:10px;min-height:18px}
-.shell{max-width:1320px;margin:0 auto;display:none}
-.topbar{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:18px;
-}
-.brand{display:flex;align-items:center;gap:10px}
-.brand h1{font-size:30px;color:var(--gold);line-height:1.05;text-shadow:0 0 22px rgba(243,201,92,.3)}
-.brand p{font-size:13px;color:var(--muted);margin-top:7px}
-.status{font-size:12px;color:var(--muted);text-align:right;padding-top:7px}
-.header-actions{display:flex;align-items:center;gap:10px;justify-content:flex-end}
-.quickbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:-8px 0 14px}
-.quickbar .ghost{padding:9px 12px}
-.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:6px}
+/* APP SHELL */
+.shell{display:none}
+.app{display:flex;min-height:100vh}
+.sidebar{width:236px;flex:0 0 236px;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.logo{padding:4px 8px 18px}
+.logo .b{font-size:27px;font-weight:800;color:var(--gold2);line-height:1;text-shadow:0 0 22px rgba(243,205,114,.3)}
+.logo .d{font-size:18px;font-weight:600;color:var(--soft);margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.tab{display:flex;align-items:center;gap:12px;border:none;background:transparent;color:var(--soft);padding:11px 12px;border-radius:11px;font-size:14px;font-weight:600;width:100%;text-align:left}
+.tab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;flex:0 0 18px}
+.tab:hover{background:#161a23;color:var(--text)}
+.tab.active{background:linear-gradient(180deg,rgba(230,184,92,.16),rgba(230,184,92,.06));color:var(--gold2);border:1px solid rgba(230,184,92,.28)}
+.side-foot{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.side-foot .st{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
 .dot.on{background:var(--green);box-shadow:0 0 9px rgba(70,224,138,.85)}
-.tabs{
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  padding-bottom:10px;
-  border-bottom:1px solid #222837;
-  margin-bottom:18px;
-  scrollbar-width:none;
-}
-.tabs::-webkit-scrollbar{display:none}
-.tab{
-  flex:0 0 auto;
-  border:none;
-  background:#1a1e28;
-  color:#9aa3b2;
-  padding:10px 14px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:700;
-}
-.tab.active{background:var(--gold);color:#0e1015;box-shadow:0 0 16px rgba(243,201,92,.3)}
-.filters{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-bottom:16px;
-}
-.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.main{flex:1;min-width:0;padding:22px 26px;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.topbar .right{display:flex;align-items:center;gap:10px}
+.rt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);border:1px solid var(--line2);border-radius:10px;padding:8px 12px}
+.quickbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.quickbar .sub{align-self:center}
+.filters{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.seg-wrap{display:flex;align-items:center;gap:10px}
+.seg-lbl{font-size:13px;font-weight:700;color:var(--gold2)}
+.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;background:#10131a;border:1px solid var(--line);border-radius:12px;padding:5px}
 .seg::-webkit-scrollbar{display:none}
-.seg button{
-  flex:0 0 auto;
-  border:none;
-  background:#1a1e28;
-  color:#9aa3b2;
-  padding:8px 12px;
-  border-radius:10px;
-  font-size:12px;
-  font-weight:700;
-}
-.seg button.active{background:#2a303d;color:var(--text)}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
-.card{
-  background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--panel2);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:18px;
-}
-.label{font-size:11px;color:#8a93a3;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
-.value{font-size:38px;line-height:1.05;font-weight:800;margin-top:12px;text-shadow:0 0 26px rgba(255,255,255,.10)}
-.sub{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
-.blue{color:var(--blue)}.green{color:var(--green)}.gold{color:var(--gold)}.purple{color:var(--purple)}.teal{color:var(--teal)}
-.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:12px;margin-bottom:12px}
-.section{
-  background:linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,0) 38%),var(--panel2);
-  border:1px solid var(--line);
-  border-radius:22px;
-  padding:20px;
-  margin-bottom:12px;
-}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-.section-title{font-size:18px;font-weight:800}
-.section-note{font-size:12px;color:var(--muted);line-height:1.4}
-.bars{height:210px;display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);padding-top:16px}
+.seg button{flex:0 0 auto;border:none;background:transparent;color:var(--muted);padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:700}
+.seg button.active{background:rgba(230,184,92,.14);color:var(--gold2);box-shadow:inset 0 0 0 1px rgba(230,184,92,.3)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 42%),var(--panel2);border:1px solid var(--line);border-radius:18px;padding:18px}
+.card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:0 0 42px}
+.ico svg{width:20px;height:20px;stroke-width:1.9;fill:none}
+.ico.dl{background:rgba(95,168,255,.12);color:var(--blue);box-shadow:inset 0 0 0 1px rgba(95,168,255,.25)}
+.ico.pu{background:rgba(70,224,138,.12);color:var(--green);box-shadow:inset 0 0 0 1px rgba(70,224,138,.25)}
+.ico.rv{background:rgba(230,184,92,.14);color:var(--gold2);box-shadow:inset 0 0 0 1px rgba(230,184,92,.3)}
+.ico.cv{background:rgba(187,155,255,.12);color:var(--purple);box-shadow:inset 0 0 0 1px rgba(187,155,255,.25)}
+.ico svg{stroke:currentColor}
+.card-label{font-size:14px;color:var(--soft);font-weight:600}
+.value{font-size:34px;line-height:1.05;font-weight:800;text-shadow:0 0 26px rgba(255,255,255,.08)}
+.sub{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+.blue{color:var(--blue)}.green{color:var(--green)}.gold{color:var(--gold2)}.purple{color:var(--purple)}
+.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,1fr);gap:14px;margin-bottom:14px}
+.section{background:linear-gradient(180deg,rgba(255,255,255,.018),transparent 38%),var(--panel2);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.section-title{font-size:17px;font-weight:800}
+.section-note{font-size:12px;color:var(--muted);line-height:1.4;font-weight:400}
+.legend{display:flex;gap:16px;align-items:center;margin-bottom:6px}
+.legend span{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.legend i{width:14px;height:8px;border-radius:3px;display:inline-block}
+.bars{height:230px;display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);padding-top:16px;margin-top:8px}
 .bar-wrap{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px}
 .bar-num{height:12px;font-size:9px;color:#8a909c}
-.bar{width:100%;min-height:3px;background:var(--blue);border-radius:5px 5px 0 0;box-shadow:0 0 10px rgba(95,168,255,.45)}
-.bar.rev{background:var(--gold);box-shadow:0 0 10px rgba(243,201,92,.5)}
-.bar-lbl{font-size:8px;color:#6d7480;white-space:nowrap;overflow:hidden;max-width:100%}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #222837;padding:12px 0}
+.bar{width:100%;min-height:3px;background:linear-gradient(180deg,var(--gold2),var(--gold));border-radius:4px 4px 0 0;box-shadow:0 0 10px rgba(230,184,92,.4)}
+.bar.rev{background:linear-gradient(180deg,var(--gold2),var(--gold))}
+.bar-lbl{font-size:8px;color:#6a717e;white-space:nowrap;overflow:hidden;max-width:100%}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0}
 .row:last-child{border-bottom:none}
 .row-main{font-size:14px;color:#e8ebf0}
 .row-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
 .row-sub b{color:#c6ccd6}
 .pill{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:5px 8px;background:#232a36;color:#b6bfcd}
-.pill.download{background:#11294a;color:var(--blue)}
-.pill.purchase{background:#0f3a22;color:var(--green)}
-.pill.code{background:#4a3a12;color:var(--gold)}
-.pill.update{background:#2c2356;color:var(--purple)}
-.progress{height:8px;background:#242a36;border-radius:999px;overflow:hidden;margin-top:10px}
-.fill{height:100%;border-radius:999px;background:var(--gold);box-shadow:0 0 14px rgba(243,201,92,.5)}
+.pill.download{background:rgba(95,168,255,.14);color:var(--blue)}
+.pill.purchase{background:rgba(70,224,138,.14);color:var(--green)}
+.pill.code{background:rgba(230,184,92,.16);color:var(--gold2)}
+.pill.update{background:rgba(187,155,255,.14);color:var(--purple)}
+.progress{height:9px;background:#1c212c;border-radius:999px;overflow:hidden;margin-top:10px}
+.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--gold2));box-shadow:0 0 14px rgba(230,184,92,.45)}
 .table{width:100%;border-collapse:collapse}
 .table th{font-size:11px;color:#8893a2;text-align:left;border-bottom:1px solid var(--line);padding:9px 0;text-transform:uppercase;letter-spacing:.05em}
-.table td{font-size:13px;color:#e4e8ef;border-bottom:1px solid #222837;padding:12px 0;vertical-align:top}
+.table td{font-size:13px;color:#e4e8ef;border-bottom:1px solid var(--line);padding:12px 0;vertical-align:top}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 .form{display:grid;gap:10px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 textarea.field{min-height:92px;resize:vertical}
@@ -201,56 +133,34 @@ textarea.field{min-height:92px;resize:vertical}
 .mini-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .mini-actions .ghost{padding:7px 9px;font-size:12px}
 .goal-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
+.foot{margin-top:18px;padding:16px 4px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.foot svg{width:16px;height:16px;color:var(--gold)}
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9998}
-.confetti:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 18%,rgba(212,181,106,.22),transparent 34%);animation:flash .9s ease-out forwards}
+.confetti:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 18%,rgba(230,184,92,.22),transparent 34%);animation:flash .9s ease-out forwards}
 .confetti i{position:absolute;top:-28px;width:10px;height:18px;background:var(--gold);box-shadow:0 0 12px rgba(255,255,255,.26);animation:fall 3.4s ease-in forwards}
 .confetti i:nth-child(3n){border-radius:999px;width:9px;height:9px}
 .confetti i:nth-child(4n){width:6px;height:24px}
 @keyframes flash{to{opacity:0}}
 @keyframes fall{0%{opacity:1}72%{opacity:1}to{transform:translateY(112vh) rotate(780deg);opacity:.18}}
-.toast{
-  position:fixed;top:18px;left:50%;transform:translateX(-50%);
-  background:#161a22;border:1px solid var(--line);color:var(--text);
-  border-radius:14px;padding:12px 16px;font-size:13px;font-weight:750;
-  z-index:99;box-shadow:0 14px 40px rgba(0,0,0,.45)
-}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#161a22;border:1px solid var(--line2);color:var(--text);border-radius:12px;padding:12px 16px;font-size:13px;font-weight:750;z-index:99;box-shadow:0 14px 40px rgba(0,0,0,.5)}
 .empty{color:#6f7785;font-size:13px;padding:18px;text-align:center}
-.muted{color:var(--muted)}
-.right{text-align:right}
-.hide{display:none!important}
-@media(max-width:900px){
-  body{padding:12px}
-  .topbar{align-items:flex-start}
-  .brand h1{font-size:25px}
-  .grid{grid-template-columns:repeat(2,1fr)}
-  .layout,.two{grid-template-columns:1fr}
-  .value{font-size:32px}
-  .section{padding:16px}
-}
-@media(max-width:768px){
-  .grid{grid-template-columns:1fr 1fr;gap:9px}
-  .card{padding:14px;border-radius:16px}
+.muted{color:var(--muted)}.right{text-align:right}.hide{display:none!important}
+#tabsBtn{display:none}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.three{grid-template-columns:1fr}.layout,.two{grid-template-columns:1fr}}
+@media(max-width:860px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;flex:none;height:auto;position:static;border-right:none;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:14px}
+  .logo{padding:0 8px 0 0}.logo .d{display:none}.logo .b{font-size:22px}
+  .nav{flex-direction:row;flex-wrap:wrap;flex:1}
+  .tab{width:auto;padding:9px 11px;font-size:13px}
+  .side-foot{margin:0;border:none;padding:0;flex-direction:row;width:100%}
+  .nav.hide{display:none!important}
+  #tabsBtn{display:inline-flex}
+  .main{padding:16px}
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
   .value{font-size:28px}
-  .sub{font-size:11px}
   .form-row{grid-template-columns:1fr}
-  .status{text-align:left}
-  .topbar{display:block;margin-bottom:10px}
-  .brand{justify-content:space-between}
-  .header-actions{justify-content:space-between;margin-top:8px}
-  .quickbar{display:grid;grid-template-columns:repeat(2,1fr);margin:0 0 12px}
-  .quickbar .ghost{width:100%;text-align:center}
-  .quickbar .sub{grid-column:1/-1;text-align:center}
-  .desktop-tab{display:none}
-  #tabsMenu:not(.hide){display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .tab{width:100%;text-align:center;padding:11px 8px}
 }
-body.mobile-mode .desktop-tab{display:none!important}
-body.mobile-mode #tabsMenu:not(.hide){display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-body.mobile-mode .tab{width:100%;text-align:center}
-body.desktop-mode .desktop-tab{display:inline-flex!important}
-body.desktop-mode #tabsMenu:not(.hide){display:flex!important}
-body.desktop-mode .tab{width:auto}
-#tabsMenu.hide,#quickbar.hide{display:none!important}
 </style>
 </head>
 <body>
@@ -273,223 +183,225 @@ body.desktop-mode .tab{width:auto}
   </div>
 </div>
 
-<main id="shell" class="shell">
-  <div class="topbar">
-    <div class="brand">
+<div id="shell" class="shell">
+ <div class="app">
+  <aside class="sidebar">
+    <div class="logo"><div class="b">Barış</div><div class="d">Dashboard</div></div>
+    <nav id="tabsMenu" class="nav">
+      <button class="tab active" onclick="switchTab('overview',this)"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Overview</button>
+      <button class="tab" onclick="switchTab('metadata',this)"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Metadata</button>
+      <button class="tab" onclick="switchTab('campaigns',this)"><svg viewBox="0 0 24 24"><path d="M3 11l14-6v14L3 13z"/><path d="M3 11v2"/></svg>Campaigns</button>
+      <button class="tab" onclick="switchTab('events',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Events</button>
+      <button class="tab" onclick="switchTab('notes',this)"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Notes</button>
+      <button class="tab" onclick="switchTab('storage',this)"><svg viewBox="0 0 24 24"><path d="M3 7l2-3h14l2 3v13H3z"/><path d="M3 7h18"/></svg>Storage</button>
+    </nav>
+    <div class="side-foot">
+      <div class="st">Realtime <span id="rtDot" class="dot"></span></div>
+      <div id="lastUpdated" class="sub" style="margin:0">Not loaded</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
       <button id="tabsBtn" class="ghost" onclick="toggleTabs()">Tabs</button>
-      <h1>Barış Dashboard</h1>
+      <div style="flex:1"></div>
+      <div class="right">
+        <div class="rt">Realtime <span class="dot on" style="opacity:.0"></span></div>
+        <button id="menuBtn" class="ghost" onclick="toggleMenu()">Menu</button>
+      </div>
     </div>
-    <div class="header-actions">
-      <div class="status">Realtime <span id="rtDot" class="dot"></span></div>
-      <button id="menuBtn" class="ghost" onclick="toggleMenu()">Menu</button>
-    </div>
-  </div>
-  <div id="quickbar" class="quickbar hide">
-    <button id="modeBtn" class="ghost" onclick="toggleDisplayMode()">Mobile mode</button>
-    <button id="soundBtn" class="ghost" onclick="toggleSound()">Sound off</button>
-    <button id="bioBtn" class="ghost" onclick="toggleBiometric()">Enable biometric</button>
-    <button class="ghost" onclick="exportDashboardData()">Export</button>
-    <div id="lastUpdated" class="sub" style="align-self:center">Not loaded</div>
-  </div>
 
-  <nav id="tabsMenu" class="tabs hide">
-    <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
-    <button class="tab desktop-tab" onclick="switchTab('metadata',this)">Metadata</button>
-    <button class="tab desktop-tab" onclick="switchTab('campaigns',this)">Campaigns</button>
-    <button class="tab" onclick="switchTab('events',this)">Events</button>
-    <button class="tab" onclick="switchTab('notes',this)">Notes</button>
-    <button class="tab desktop-tab" onclick="switchTab('storage',this)">Storage</button>
-  </nav>
-
-  <div class="filters">
-    <div class="seg" id="appSeg">
-      <button class="active" onclick="setApp('all',this)">All apps</button>
-      <button onclick="setApp('personalcapsule',this)">PersonalCapsule</button>
-      <button onclick="setApp('yula',this)">Yula</button>
-      <button onclick="setApp('appconsol',this)">AppConsol</button>
+    <div id="quickbar" class="quickbar hide">
+      <button id="modeBtn" class="ghost" onclick="toggleDisplayMode()">Mobile mode</button>
+      <button id="soundBtn" class="ghost" onclick="toggleSound()">Sound off</button>
+      <button id="bioBtn" class="ghost" onclick="toggleBiometric()">Enable biometric</button>
+      <button class="ghost" onclick="exportDashboardData()">Export</button>
+      <button class="ghost" onclick="manualRefresh()" id="refreshBtn2" style="display:none">Refresh</button>
     </div>
-    <div class="seg" id="timeSeg">
-      <button onclick="setTime('today',this)">Today</button>
-      <button onclick="setTime('7d',this)">7d</button>
-      <button onclick="setTime('30d',this)">30d</button>
-      <button class="active" onclick="setTime('lifetime',this)">Lifetime</button>
-    </div>
-  </div>
 
-  <section id="panel-overview" class="tab-panel active">
     <div class="grid">
-      <div class="card"><div class="label">Downloads</div><div id="mDownloads" class="value blue">-</div><div id="sDownloads" class="sub"></div></div>
-      <div class="card"><div class="label">Purchases</div><div id="mPurchases" class="value green">-</div><div id="sPurchases" class="sub"></div></div>
-      <div class="card"><div class="label">Revenue</div><div id="mRevenue" class="value gold">-</div><div id="sRevenue" class="sub"></div></div>
-      <div class="card"><div class="label">Conversion</div><div id="mConversion" class="value purple">-</div><div id="sConversion" class="sub">purchase / download</div></div>
+      <div class="card"><div class="card-top"><span class="ico dl"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg></span><div class="card-label">Downloads</div></div><div id="mDownloads" class="value blue">-</div><div id="sDownloads" class="sub"></div></div>
+      <div class="card"><div class="card-top"><span class="ico pu"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2 12h11l2-8H6"/></svg></span><div class="card-label">Purchases</div></div><div id="mPurchases" class="value green">-</div><div id="sPurchases" class="sub"></div></div>
+      <div class="card"><div class="card-top"><span class="ico rv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.2c0-1.2 1.1-1.8 2.5-1.8s2.5.6 2.5 1.8-1.1 1.6-2.5 1.8-2.5.6-2.5 1.8 1.1 1.8 2.5 1.8 2.5-.6 2.5-1.8"/></svg></span><div class="card-label">Revenue</div></div><div id="mRevenue" class="value gold">-</div><div id="sRevenue" class="sub"></div></div>
+      <div class="card"><div class="card-top"><span class="ico cv"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></svg></span><div class="card-label">Conversion</div></div><div id="mConversion" class="value purple">-</div><div id="sConversion" class="sub">purchase / download</div></div>
     </div>
-    <div class="section">
-      <div class="section-head">
-        <div>
-          <div class="section-title">Monthly goal</div>
-          <div class="section-note">Local browser goal for this month. It does not change Supabase data.</div>
-        </div>
-        <div class="toolbar">
-          <input id="goalInput" class="field" style="width:130px;padding:9px 10px" inputmode="decimal" placeholder="$ goal"/>
-          <button class="ghost" onclick="saveMonthlyGoal()">Save</button>
-        </div>
-      </div>
-      <div class="goal-line">
-        <div>
-          <div id="goalText" class="row-main">No goal set</div>
-          <div class="progress"><div id="goalFill" class="fill" style="width:0%"></div></div>
-          <div id="goalSub" class="sub"></div>
-        </div>
-        <div class="right">
-          <div id="goalPercent" class="row-main gold">0%</div>
-          <div class="row-sub">progress</div>
-        </div>
-      </div>
-    </div>
-    <div class="layout">
-      <div class="section">
-        <div class="section-head">
-          <div>
-            <div class="section-title" id="activityTitle">Activity</div>
-            <div class="section-note">Download bars with revenue emphasis. This is the first place to check trend.</div>
-          </div>
-          <button class="ghost" onclick="manualRefresh()" id="refreshBtn">Refresh</button>
-        </div>
-        <div id="activityChart" class="bars"></div>
-      </div>
-      <div class="section">
-        <div class="section-head">
-          <div>
-            <div class="section-title">App breakdown</div>
-            <div class="section-note">High-level comparison across apps.</div>
-          </div>
-        </div>
-        <div id="appBreakdown"></div>
-      </div>
-    </div>
-    <div class="two">
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">Latest metadata signal</div><div class="section-note">Most recent manual metadata entry.</div></div></div>
-        <div id="latestMetadata" class="empty">No metadata loaded yet</div>
-      </div>
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">Recent business events</div><div class="section-note">Only the latest raw events.</div></div></div>
-        <div id="overviewEvents"></div>
-      </div>
-    </div>
-  </section>
 
-  <section id="panel-metadata" class="tab-panel">
-    <div class="layout">
-      <div class="section">
-        <div class="section-head">
-          <div><div class="section-title">Metadata timeline</div><div class="section-note">Manual metadata changes compared with downloads and revenue by locale.</div></div>
-          <button class="ghost" onclick="toggleMetaForm()">Add / import</button>
+    <div class="filters">
+      <div class="seg-wrap"><span class="seg-lbl">Apps</span>
+        <div class="seg" id="appSeg">
+          <button class="active" onclick="setApp('all',this)">All apps</button>
+          <button onclick="setApp('personalcapsule',this)">PersonalCapsule</button>
+          <button onclick="setApp('yula',this)">Yula</button>
+          <button onclick="setApp('appconsol',this)">AppConsol</button>
         </div>
-        <div id="metadataForm" class="form hide">
-          <textarea id="metaJsonInput" class="field" placeholder='Optional JSON import: {"app":"personalcapsule","locales":[...]}'></textarea>
-          <div class="toolbar"><button class="primary" onclick="importMetadata()">Import JSON</button><button class="ghost" onclick="clearMetaForm()">Clear</button></div>
-          <div class="form-row">
-            <select id="metaApp" class="field"><option value="personalcapsule">PersonalCapsule</option><option value="yula">Yula</option><option value="appconsol">AppConsol</option></select>
-            <input id="metaLocale" class="field" placeholder="Locale, e.g. fr, tr, en"/>
-          </div>
-          <input id="metaTitle" class="field" placeholder="Title"/>
-          <input id="metaSubtitle" class="field" placeholder="Subtitle"/>
-          <textarea id="metaKeywords" class="field" placeholder="Keywords"></textarea>
-          <input id="metaNotes" class="field" placeholder="Notes"/>
-          <button class="primary" onclick="addMetadataManual()">Save metadata entry</button>
-          <div id="metaStatus" class="sub"></div>
-        </div>
-        <div id="metadataTimeline"></div>
       </div>
-      <div>
+      <div class="seg" id="timeSeg">
+        <button onclick="setTime('today',this)">Today</button>
+        <button onclick="setTime('7d',this)">7d</button>
+        <button onclick="setTime('30d',this)">30d</button>
+        <button class="active" onclick="setTime('lifetime',this)">Lifetime</button>
+      </div>
+    </div>
+
+    <section id="panel-overview" class="tab-panel active">
+      <div class="layout">
         <div class="section">
-          <div class="section-head"><div><div class="section-title">Locale impact</div><div class="section-note">Locale means language/metadata group, not exact country.</div></div></div>
-          <div id="localeImpact"></div>
+          <div class="section-head">
+            <div><div class="section-title">Monthly goal</div><div class="section-note">Local browser goal for this month. It does not change Supabase data.</div></div>
+            <div class="toolbar">
+              <input id="goalInput" class="field" style="width:130px;padding:9px 10px" inputmode="decimal" placeholder="$ goal"/>
+              <button class="ghost" onclick="saveMonthlyGoal()">Save</button>
+            </div>
+          </div>
+          <div class="goal-line">
+            <div>
+              <div id="goalText" class="row-main">No goal set</div>
+              <div class="progress"><div id="goalFill" class="fill" style="width:0%"></div></div>
+              <div id="goalSub" class="sub"></div>
+            </div>
+            <div class="right"><div id="goalPercent" class="row-main gold">0%</div><div class="row-sub">progress</div></div>
+          </div>
         </div>
         <div class="section">
-          <div class="section-head"><div><div class="section-title">Version performance</div><div class="section-note">Period between metadata changes.</div></div></div>
-          <div id="versionPerformance"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="panel-campaigns" class="tab-panel">
-    <div class="two">
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">New campaign</div><div class="section-note">Manual log only. No app-side attribution tracking.</div></div></div>
-        <div class="form">
-          <div class="form-row">
-            <select id="campaignApp" class="field"><option value="all">All Apps</option><option value="personalcapsule">PersonalCapsule</option><option value="yula">Yula</option><option value="appconsol">AppConsol</option></select>
-            <select id="campaignPlatform" class="field"><option value="reddit">Reddit</option><option value="tiktok">TikTok</option><option value="apple_ads">Apple Ads</option><option value="twitter">Twitter/X</option><option value="other">Other</option></select>
+          <div class="section-head">
+            <div><div class="section-title" id="activityTitle">Activity</div><div class="section-note">Download bars by period. First place to check trend.</div></div>
+            <button class="ghost" onclick="manualRefresh()" id="refreshBtn">Refresh</button>
           </div>
-          <input id="campaignName" class="field" placeholder="Campaign name"/>
-          <input id="campaignCode" class="field" placeholder="Offer code, optional"/>
-          <input id="campaignNotes" class="field" placeholder="Notes"/>
-          <div class="toolbar">
-            <button id="campaignSubmit" class="primary" onclick="saveCampaign()">Add campaign</button>
-            <button id="campaignCancel" class="ghost hide" onclick="cancelCampaignEdit()">Cancel edit</button>
+          <div class="legend"><span><i style="background:var(--gold2)"></i>Downloads</span></div>
+          <div id="activityChart" class="bars"></div>
+        </div>
+      </div>
+      <div class="three">
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">App breakdown</div><div class="section-note">High-level comparison.</div></div></div>
+          <div id="appBreakdown"></div>
+        </div>
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">Latest metadata signal</div><div class="section-note">Most recent entry.</div></div></div>
+          <div id="latestMetadata" class="empty">No metadata loaded yet</div>
+        </div>
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">Recent business events</div><div class="section-note">Latest raw events.</div></div></div>
+          <div id="overviewEvents"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-metadata" class="tab-panel">
+      <div class="layout">
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">Metadata timeline</div><div class="section-note">Manual metadata changes vs downloads and revenue by locale.</div></div>
+            <button class="ghost" onclick="toggleMetaForm()">Add / import</button>
+          </div>
+          <div id="metadataForm" class="form hide">
+            <textarea id="metaJsonInput" class="field" placeholder='Optional JSON import: {"app":"personalcapsule","locales":[...]}'></textarea>
+            <div class="toolbar"><button class="primary" onclick="importMetadata()">Import JSON</button><button class="ghost" onclick="clearMetaForm()">Clear</button></div>
+            <div class="form-row">
+              <select id="metaApp" class="field"><option value="personalcapsule">PersonalCapsule</option><option value="yula">Yula</option><option value="appconsol">AppConsol</option></select>
+              <input id="metaLocale" class="field" placeholder="Locale, e.g. fr, tr, en"/>
+            </div>
+            <input id="metaTitle" class="field" placeholder="Title"/>
+            <input id="metaSubtitle" class="field" placeholder="Subtitle"/>
+            <textarea id="metaKeywords" class="field" placeholder="Keywords"></textarea>
+            <input id="metaNotes" class="field" placeholder="Notes"/>
+            <button class="primary" onclick="addMetadataManual()">Save metadata entry</button>
+            <div id="metaStatus" class="sub"></div>
+          </div>
+          <div id="metadataTimeline"></div>
+        </div>
+        <div>
+          <div class="section">
+            <div class="section-head"><div><div class="section-title">Locale impact</div><div class="section-note">Locale means language/metadata group.</div></div></div>
+            <div id="localeImpact"></div>
+          </div>
+          <div class="section">
+            <div class="section-head"><div><div class="section-title">Version performance</div><div class="section-note">Period between metadata changes.</div></div></div>
+            <div id="versionPerformance"></div>
           </div>
         </div>
       </div>
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">Campaign log</div><div class="section-note">Use this next to the activity graph.</div></div></div>
-        <div id="campaignList"></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="panel-events" class="tab-panel">
-    <div class="section">
-      <div class="section-head">
-        <div><div class="section-title">Raw events</div><div class="section-note">The source records behind dashboard numbers.</div></div>
-        <div id="clearArea"><button class="ghost danger" onclick="askClearAll()">Clear filtered</button></div>
-      </div>
-      <table class="table">
-        <thead><tr><th>Time</th><th>App</th><th>Event</th><th>Detail</th><th></th></tr></thead>
-        <tbody id="eventsTable"></tbody>
-      </table>
-      <div id="eventsEmpty" class="empty hide">No events</div>
-    </div>
-  </section>
-
-  <section id="panel-notes" class="tab-panel">
-    <div class="two">
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">New note</div><div class="section-note">Personal operating notes.</div></div></div>
-        <div class="form">
-          <textarea id="noteInput" class="field" placeholder="Write a note..."></textarea>
-          <select id="noteTag" class="field"><option value="general">General</option><option value="pc">PersonalCapsule</option><option value="yula">Yula</option></select>
-          <div class="toolbar">
-            <button id="noteSubmit" class="primary" onclick="saveNote()">Add note</button>
-            <button id="noteCancel" class="ghost hide" onclick="cancelNoteEdit()">Cancel edit</button>
+    <section id="panel-campaigns" class="tab-panel">
+      <div class="two">
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">New campaign</div><div class="section-note">Manual log only.</div></div></div>
+          <div class="form">
+            <div class="form-row">
+              <select id="campaignApp" class="field"><option value="all">All Apps</option><option value="personalcapsule">PersonalCapsule</option><option value="yula">Yula</option><option value="appconsol">AppConsol</option></select>
+              <select id="campaignPlatform" class="field"><option value="reddit">Reddit</option><option value="tiktok">TikTok</option><option value="apple_ads">Apple Ads</option><option value="twitter">Twitter/X</option><option value="other">Other</option></select>
+            </div>
+            <input id="campaignName" class="field" placeholder="Campaign name"/>
+            <input id="campaignCode" class="field" placeholder="Offer code, optional"/>
+            <input id="campaignNotes" class="field" placeholder="Notes"/>
+            <div class="toolbar">
+              <button id="campaignSubmit" class="primary" onclick="saveCampaign()">Add campaign</button>
+              <button id="campaignCancel" class="ghost hide" onclick="cancelCampaignEdit()">Cancel edit</button>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">Notes</div><div class="section-note">Pending and completed notes.</div></div></div>
-        <div id="notesList"></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="panel-storage" class="tab-panel">
-    <div class="two">
-      <div class="section">
-        <div class="section-head"><div><div class="section-title">Upload file</div><div class="section-note">Screenshots, references, assets.</div></div></div>
-        <div class="form">
-          <select id="uploadFolder" class="field"><option value="">Root</option><option value="pc">PC</option><option value="yula">Yula</option><option value="screenshots">Screenshots</option><option value="general">General</option></select>
-          <input id="fileInput" class="field" type="file" multiple onchange="handleUpload(this.files)"/>
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">Campaign log</div><div class="section-note">Use next to the activity graph.</div></div></div>
+          <div id="campaignList"></div>
         </div>
       </div>
+    </section>
+
+    <section id="panel-events" class="tab-panel">
       <div class="section">
-        <div class="section-head"><div><div class="section-title">Files</div><div class="section-note" id="storageUsage">Storage usage</div></div></div>
-        <div id="fileList"></div>
+        <div class="section-head">
+          <div><div class="section-title">Raw events</div><div class="section-note">Source records behind the numbers.</div></div>
+          <div id="clearArea"><button class="ghost danger" onclick="askClearAll()">Clear filtered</button></div>
+        </div>
+        <table class="table">
+          <thead><tr><th>Time</th><th>App</th><th>Event</th><th>Detail</th><th></th></tr></thead>
+          <tbody id="eventsTable"></tbody>
+        </table>
+        <div id="eventsEmpty" class="empty hide">No events</div>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
+
+    <section id="panel-notes" class="tab-panel">
+      <div class="two">
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">New note</div><div class="section-note">Personal operating notes.</div></div></div>
+          <div class="form">
+            <textarea id="noteInput" class="field" placeholder="Write a note..."></textarea>
+            <select id="noteTag" class="field"><option value="general">General</option><option value="pc">PersonalCapsule</option><option value="yula">Yula</option></select>
+            <div class="toolbar">
+              <button id="noteSubmit" class="primary" onclick="saveNote()">Add note</button>
+              <button id="noteCancel" class="ghost hide" onclick="cancelNoteEdit()">Cancel edit</button>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">Notes</div><div class="section-note">Pending and completed notes.</div></div></div>
+          <div id="notesList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-storage" class="tab-panel">
+      <div class="two">
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">Upload file</div><div class="section-note">Screenshots, references, assets.</div></div></div>
+          <div class="form">
+            <select id="uploadFolder" class="field"><option value="">Root</option><option value="pc">PC</option><option value="yula">Yula</option><option value="screenshots">Screenshots</option><option value="general">General</option></select>
+            <input id="fileInput" class="field" type="file" multiple onchange="handleUpload(this.files)"/>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">Files</div><div class="section-note" id="storageUsage">Storage usage</div></div></div>
+          <div id="fileList"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 7l4 4 5-6 5 6 4-4v11H3z"/></svg> Private dashboard for high-level app business metrics.</div>
+  </main>
+ </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
