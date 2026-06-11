@@ -145,6 +145,17 @@ textarea.field{min-height:92px;resize:vertical}
 .mini-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .mini-actions .ghost{padding:7px 9px;font-size:12px}
 .goal-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
+.overview-grid{display:grid;grid-template-columns:360px minmax(0,1fr) minmax(300px,1fr);gap:14px;margin-bottom:14px}
+.goal-compact{min-height:230px}
+.compact-head{margin-bottom:12px}
+.goal-mini{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:center}
+.goal-ring{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--gold2) var(--goal-deg),#202632 0deg);position:relative;box-shadow:inset 0 0 0 1px rgba(230,184,92,.2),0 14px 34px rgba(0,0,0,.28)}
+.goal-ring:after{content:"";position:absolute;inset:11px;border-radius:50%;background:linear-gradient(180deg,#151922,#10131a);border:1px solid rgba(255,255,255,.04)}
+.goal-ring span{position:relative;z-index:1;font-size:21px;font-weight:850;color:var(--gold2)}
+.goal-copy{min-width:0}
+.goal-actions{display:flex;gap:8px;margin-top:12px}
+.goal-actions .field{width:110px;padding:8px 10px}
+.tiny-progress{height:5px;margin-top:12px}
 .foot{margin-top:18px;padding:16px 4px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
 .foot svg{width:16px;height:16px;color:var(--gold)}
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9998}
@@ -197,9 +208,9 @@ body.desktop-mode #tabsMenu.hide{display:flex!important}
 .app-avatar.yula{background:rgba(70,224,138,.13);color:var(--green);box-shadow:inset 0 0 0 1px rgba(70,224,138,.25)}
 .app-avatar.appconsol{background:rgba(187,155,255,.13);color:var(--purple);box-shadow:inset 0 0 0 1px rgba(187,155,255,.25)}
 .clear-confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.clear-confirm .field{width:120px;padding:8px 10px}.clear-warning{color:var(--red);font-size:12px;margin-top:6px;text-align:right}
-@media(max-width:560px){.grid{grid-template-columns:1fr}.card{padding:16px}.section{padding:16px;border-radius:16px}.sidebar{padding:12px}.nav{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.tab{flex:0 0 auto}.filters{gap:10px}.seg-wrap{width:100%;align-items:flex-start;flex-direction:column}.seg{width:100%}.value{font-size:30px}.bars{height:220px}.chart-bars{gap:4px}.bar-tip{display:none!important}.table{min-width:650px}#panel-events .section{overflow-x:auto}.topbar{gap:8px}.quickbar{display:grid;grid-template-columns:1fr 1fr}.quickbar .ghost{width:100%}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.card{padding:16px}.section{padding:16px;border-radius:16px}.goal-mini{grid-template-columns:86px minmax(0,1fr);gap:12px}.goal-ring{width:86px;height:86px}.goal-ring span{font-size:18px}.goal-actions{flex-wrap:wrap}.goal-actions .field{width:100%}.sidebar{padding:12px}.nav{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.tab{flex:0 0 auto}.filters{gap:10px}.seg-wrap{width:100%;align-items:flex-start;flex-direction:column}.seg{width:100%}.value{font-size:30px}.bars{height:220px}.chart-bars{gap:4px}.bar-tip{display:none!important}.table{min-width:650px}#panel-events .section{overflow-x:auto}.topbar{gap:8px}.quickbar{display:grid;grid-template-columns:1fr 1fr}.quickbar .ghost{width:100%}}
 
-@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.three{grid-template-columns:1fr}.layout,.two{grid-template-columns:1fr}}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.three,.overview-grid{grid-template-columns:1fr}.layout,.two{grid-template-columns:1fr}.goal-compact{min-height:auto}}
 @media(max-width:860px){
   .app{flex-direction:column}
   .sidebar{width:100%;flex:none;height:auto;position:static;border-right:none;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:14px}
@@ -301,41 +312,28 @@ body.desktop-mode #tabsMenu.hide{display:flex!important}
     </div>
 
     <section id="panel-overview" class="tab-panel active">
-      <div class="layout">
-        <div class="section">
-          <div class="section-head">
-            <div><div class="section-title">Monthly goal</div><div class="section-note">Local browser goal for this month. It does not change Supabase data.</div></div>
-            <div class="toolbar">
-              <input id="goalInput" class="field" style="width:130px;padding:9px 10px" inputmode="decimal" placeholder="$ goal"/>
-              <button class="ghost" onclick="saveMonthlyGoal()">Save</button>
-            </div>
-          </div>
-          <div class="goal-line">
-            <div>
-              <div id="goalText" class="row-main">No goal set</div>
-              <div class="progress"><div id="goalFill" class="fill" style="width:0%"></div></div>
-              <div id="goalSub" class="sub"></div>
-            </div>
-            <div class="right"><div id="goalPercent" class="row-main gold">0%</div><div class="row-sub">progress</div></div>
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-head">
-            <div><div class="section-title" id="activityTitle">Activity</div><div class="section-note">Download bars by period. First place to check trend.</div></div>
+      <div class="overview-grid">
+        <div class="section goal-compact">
+          <div class="section-head compact-head">
+            <div><div class="section-title">Monthly goal</div><div class="section-note">Compact monthly revenue progress.</div></div>
             <button class="ghost" onclick="manualRefresh()" id="refreshBtn">Refresh</button>
           </div>
-          <div class="legend"><span><i style="background:var(--gold2)"></i>Downloads</span></div>
-          <div id="activityChart" class="bars"></div>
+          <div class="goal-mini">
+            <div id="goalRing" class="goal-ring" style="--goal-deg:0deg"><span id="goalPercent">0%</span></div>
+            <div class="goal-copy">
+              <div id="goalText" class="row-main">No goal set</div>
+              <div id="goalSub" class="sub"></div>
+              <div class="goal-actions">
+                <input id="goalInput" class="field" inputmode="decimal" placeholder="$ goal"/>
+                <button class="ghost" onclick="saveMonthlyGoal()">Save</button>
+              </div>
+              <div class="progress tiny-progress"><div id="goalFill" class="fill" style="width:0%"></div></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="three">
         <div class="section">
           <div class="section-head"><div><div class="section-title">App breakdown</div><div class="section-note">High-level comparison.</div></div></div>
           <div id="appBreakdown"></div>
-        </div>
-        <div class="section">
-          <div class="section-head"><div><div class="section-title">Latest metadata signal</div><div class="section-note">Most recent entry.</div></div></div>
-          <div id="latestMetadata" class="empty">No metadata loaded yet</div>
         </div>
         <div class="section">
           <div class="section-head"><div><div class="section-title">Recent business events</div><div class="section-note">Latest raw events.</div></div></div>
@@ -529,62 +527,11 @@ window.addEventListener('pointerdown',function(){if(soundEnabled())unlockAudio()
 	function hasRevenue(e){return priceValue(e)>0}
 	function filtered(){var base=uniqueEvents(allEvents);var ev=currentApp==='all'?base:base.filter(function(e){return e.app===currentApp});if(currentTime==='lifetime')return ev;var now=new Date(),cut;if(currentTime==='today')cut=new Date(now.getFullYear(),now.getMonth(),now.getDate());if(currentTime==='7d')cut=new Date(Date.now()-7*864e5);if(currentTime==='30d')cut=new Date(Date.now()-30*864e5);return ev.filter(function(e){return new Date(e.created_at)>=cut})}
 	function summary(ev){ev=uniqueEvents(ev);var dl=ev.filter(function(e){return e.event==='download'}),pr=ev.filter(function(e){return e.event==='purchase'}),paid=pr.filter(hasRevenue),code=pr.filter(function(e){return e.source==='offerCode'}),free=pr.filter(function(e){return priceValue(e)===0}),paidCode=code.filter(hasRevenue),freeCode=code.filter(function(e){return priceValue(e)===0}),restore=pr.filter(function(e){return e.source==='restore'}),unknown=pr.filter(function(e){return e.price===null||e.price===undefined||e.price===''}),rev=0;paid.forEach(function(e){rev+=toUSD(e.price,e.currency)});return{dl:dl,pr:pr,paid:paid,code:code,free:free,paidCode:paidCode,freeCode:freeCode,restore:restore,unknown:unknown,rev:rev}}
-function renderAll(){var ev=filtered(),s=summary(ev);qs('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});qs('mDownloads').textContent=s.dl.length;qs('sDownloads').textContent=s.dl.filter(function(e){return e.source!=='update'}).length+' new / '+s.dl.filter(function(e){return e.source==='update'}).length+' updates';qs('mPurchases').textContent=s.pr.length;qs('sPurchases').textContent=s.paid.length+' paid / '+s.code.length+' codes';qs('mRevenue').textContent='$'+s.rev.toFixed(2);qs('sRevenue').textContent='$'+(s.rev*.85).toFixed(2)+' estimated proceeds';qs('mConversion').textContent=(s.dl.length?(s.pr.length/s.dl.length*100).toFixed(1):'0')+'%';renderGoal();renderChart(ev);renderApps();renderOverviewEvents(ev);renderEvents(ev);renderMetadata();renderCampaigns();renderNotes()}
+function renderAll(){var ev=filtered(),s=summary(ev);qs('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});qs('mDownloads').textContent=s.dl.length;qs('sDownloads').textContent=s.dl.filter(function(e){return e.source!=='update'}).length+' new / '+s.dl.filter(function(e){return e.source==='update'}).length+' updates';qs('mPurchases').textContent=s.pr.length;qs('sPurchases').textContent=s.paid.length+' paid / '+s.code.length+' codes';qs('mRevenue').textContent='$'+s.rev.toFixed(2);qs('sRevenue').textContent='$'+(s.rev*.85).toFixed(2)+' estimated proceeds';qs('mConversion').textContent=(s.dl.length?(s.pr.length/s.dl.length*100).toFixed(1):'0')+'%';renderGoal();renderApps();renderOverviewEvents(ev);renderEvents(ev);renderMetadata();renderCampaigns();renderNotes()}
 	function checkNew(){var s=summary(uniqueEvents(allEvents)),newDownloads=s.dl.filter(function(e){return e.source!=='update'}).length,updateDownloads=s.dl.filter(function(e){return e.source==='update'}).length,purchases=s.pr.length,msgs=[],kind='download';if(prevNewDownloads>=0&&newDownloads>prevNewDownloads){msgs.push('new download');kind='download'}if(prevUpdateDownloads>=0&&updateDownloads>prevUpdateDownloads){msgs.push('update open');kind=kind==='download'?'download':'update'}if(prevPurchases>=0&&purchases>prevPurchases){msgs.push('purchase');kind='purchase'}if(prevRevenue>=0&&s.rev>prevRevenue){msgs.push('revenue $'+(s.rev-prevRevenue).toFixed(2));kind='revenue'}if(msgs.length){toast('New '+msgs.join(' + '));burstConfetti(5200);playNotifySound(kind);flashTitle(msgs[0])}prevNewDownloads=newDownloads;prevUpdateDownloads=updateDownloads;prevPurchases=purchases;prevRevenue=s.rev}
 function saveMonthlyGoal(){var n=parseFloat(qs('goalInput').value);if(!isFinite(n)||n<=0){localStorage.removeItem('monthly_goal_usd');toast('Goal cleared')}else{localStorage.setItem('monthly_goal_usd',String(n));toast('Goal saved')}renderGoal()}
-function renderGoal(){var goal=parseFloat(localStorage.getItem('monthly_goal_usd')||'0'),s=summary(monthEvents()),rev=s.rev,txt=qs('goalText'),sub=qs('goalSub'),fill=qs('goalFill'),pct=qs('goalPercent');if(!goal){qs('goalInput').value='';txt.textContent='No monthly goal set';sub.textContent='Set a USD revenue target for this month.';fill.style.width='0%';pct.textContent='0%';return}qs('goalInput').value=goal;var p=Math.min(100,Math.round(rev/goal*100));txt.textContent='$'+rev.toFixed(2)+' of $'+goal.toFixed(2)+' this month';sub.textContent=s.paid.length+' paid purchases · '+s.freeCode.length+' free codes · '+s.dl.length+' downloads';fill.style.width=p+'%';pct.textContent=p+'%';var key='goal_celebrated_'+monthKey()+'_'+currentApp;if(rev>=goal&&!localStorage.getItem(key)){localStorage.setItem(key,'1');burstConfetti();toast('Monthly goal reached')}}
+function renderGoal(){var goal=parseFloat(localStorage.getItem('monthly_goal_usd')||'0'),s=summary(monthEvents()),rev=s.rev,txt=qs('goalText'),sub=qs('goalSub'),fill=qs('goalFill'),pct=qs('goalPercent'),ring=qs('goalRing');if(!goal){qs('goalInput').value='';txt.textContent='No monthly goal set';sub.textContent='Set a small USD target for this month.';if(fill)fill.style.width='0%';if(pct)pct.textContent='0%';if(ring)ring.style.setProperty('--goal-deg','0deg');return}qs('goalInput').value=goal;var p=Math.min(100,Math.round(rev/goal*100)),deg=Math.round(p*3.6);txt.textContent='$'+rev.toFixed(2)+' / $'+goal.toFixed(2);sub.textContent=s.paid.length+' paid · '+s.freeCode.length+' free codes · '+s.dl.length+' downloads';if(fill)fill.style.width=p+'%';if(pct)pct.textContent=p+'%';if(ring)ring.style.setProperty('--goal-deg',deg+'deg');var key='goal_celebrated_'+monthKey()+'_'+currentApp;if(rev>=goal&&!localStorage.getItem(key)){localStorage.setItem(key,'1');burstConfetti();toast('Monthly goal reached')}}
 function burstConfetti(ms){ms=ms||5200;var box=document.createElement('div');box.className='confetti';for(var i=0;i<190;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=['#d4b56a','#f8e08e','#62df86','#73a9ff','#ff7ab6','#b69cff','#2dd4bf'][i%7];p.style.animationDelay=(Math.random()*1.15)+'s';p.style.animationDuration=(3.1+Math.random()*1.35)+'s';p.style.transform='rotate('+(Math.random()*240)+'deg)';box.appendChild(p)}document.body.appendChild(box);setTimeout(function(){box.remove()},ms)}
-function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function renderChart(ev){
-  var buckets=[],title='Activity';
-  function addBucket(label,start,end){
-    var rows=ev.filter(function(e){var d=new Date(e.created_at);return d>=start&&d<end});
-    var sum=summary(rows);
-    buckets.push({label:label,downloads:sum.dl.length,revenue:sum.rev,purchases:sum.pr.length});
-  }
-  if(currentTime==='today'){
-    title='Today by hour';
-    var now=new Date(),startDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-    for(var h=0;h<24;h++){
-      var hs=new Date(startDay.getTime()+h*3600000),he=new Date(startDay.getTime()+(h+1)*3600000),hh=String(h).padStart(2,'0');
-      addBucket(h%6===0?hh+':00':'',hs,he);
-    }
-  }else if(currentTime==='7d'||currentTime==='30d'){
-    var days=currentTime==='7d'?7:30;
-    title=currentTime==='7d'?'Last 7 days':'Last 30 days';
-    for(var i=days-1;i>=0;i--){
-      var day=new Date();day.setHours(0,0,0,0);day.setDate(day.getDate()-i);
-      var next=new Date(day);next.setDate(next.getDate()+1);
-      addBucket(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.getDay()]:(i%6===0?day.getDate()+'/'+(day.getMonth()+1):''),day,next);
-    }
-  }else{
-    title='All time by week';
-    if(ev.length){
-      var sorted=ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),first=new Date(sorted[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));
-      for(var w=weeks-1;w>=0;w--){
-        var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);
-        addBucket(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''),ws,we);
-      }
-    }
-  }
-  var titleEl=qs('activityTitle'),chartEl=qs('activityChart');
-  if(titleEl)titleEl.textContent=title;
-  if(!chartEl)return;
-  if(!buckets.length){chartEl.innerHTML='<div class="empty">No data yet</div>';return}
-  var maxDl=Math.max.apply(null,buckets.map(function(b){return b.downloads}))||1;
-  var maxRev=Math.max.apply(null,buckets.map(function(b){return b.revenue}))||0;
-  var bars=buckets.map(function(b,i){
-    var height=Math.max(3,Math.round(b.downloads/maxDl*165));
-    var label=esc(b.label||'');
-    return '<div class="bar-wrap"><div class="bar-tip"><b>'+esc(b.label||'Period')+'</b>'+b.downloads+' downloads<br>$'+b.revenue.toFixed(2)+' revenue<br>'+b.purchases+' purchases</div><div class="bar-num">'+(b.downloads||'')+'</div><div class="bar" style="height:'+height+'px"></div><div class="bar-lbl">'+label+'</div></div>';
-  }).join('');
-  var svg='';
-  if(maxRev>0&&buckets.length>1){
-    var pts=buckets.map(function(b,i){var x=(i/(buckets.length-1))*100,y=92-(b.revenue/maxRev)*78;return{x:x,y:y,txt:x.toFixed(2)+','+y.toFixed(2)}});
-    svg='<svg class="rev-line" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="'+pts.map(function(p){return p.txt}).join(' ')+'"/>'+pts.map(function(p){return '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="1.7"/>'}).join('')+'</svg>';
-  }
-  chartEl.innerHTML='<div class="chart-bars">'+bars+'</div>'+svg;
-}
 	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},initials={personalcapsule:'PC',yula:'Y',appconsol:'AC'},classes={personalcapsule:'pc',yula:'yula',appconsol:'appconsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100),cls=classes[x.app]||'';rows+='<div class="row"><div class="app-line"><span class="app-avatar '+cls+'">'+initials[x.app]+'</span><div style="min-width:0"><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill '+cls+'" style="width:'+w+'%"></div></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
 function renderOverviewEvents(ev){var rc=ev.slice(0,4);qs('overviewEvents').innerHTML=rc.length?rc.map(eventRowMini).join(''):'<div class="empty">No events</div>'}
 function eventBadge(e){if(e.event==='download'&&e.source==='update')return'<span class="pill update">update</span>';if(e.event==='download')return'<span class="pill download">download</span>';if(e.source==='offerCode')return'<span class="pill code">code</span>';return'<span class="pill purchase">'+esc(e.event)+'</span>'}
@@ -604,7 +551,7 @@ function isDuplicateMeta(body,extra){var key=metaKey(body),arr=allMetadata.conca
 function addMetadataManual(){var body={app:qs('metaApp').value,locale:qs('metaLocale').value.trim(),title:qs('metaTitle').value.trim()||null,subtitle:qs('metaSubtitle').value.trim()||null,keywords:qs('metaKeywords').value.trim()||null,notes:qs('metaNotes').value.trim()||null};if(!body.locale){qs('metaStatus').textContent='Locale required';return}if(isDuplicateMeta(body)){qs('metaStatus').textContent='Duplicate metadata skipped';toast('Duplicate skipped');return}fetch(SB+'/rest/v1/metadata_history',{method:'POST',headers:headers(),body:JSON.stringify(body)}).then(function(r){if(r.ok){toast('Metadata saved');loadAll()}else apiError(r,'Metadata save')})}
 function importMetadata(){try{var json=JSON.parse(qs('metaJsonInput').value.trim()),items=json.locales||[],todo=[],skipped=0,done=0,imported=0;if(!json.app||!Array.isArray(items)){qs('metaStatus').textContent='Invalid JSON';return}items.forEach(function(loc){var body={app:json.app,locale:loc.locale,title:loc.title||null,subtitle:loc.subtitle||null,keywords:loc.keywords||null,notes:loc.notes||null};if(!body.locale||isDuplicateMeta(body,todo))skipped++;else todo.push(body)});if(!todo.length){qs('metaStatus').textContent='Nothing imported. '+skipped+' duplicate/invalid skipped.';toast('No new metadata');return}todo.forEach(function(body){fetch(SB+'/rest/v1/metadata_history',{method:'POST',headers:headers(),body:JSON.stringify(body)}).then(function(r){done++;if(r.ok)imported++;else skipped++;if(done===todo.length){qs('metaStatus').textContent=imported+' imported, '+skipped+' skipped';toast('Metadata import finished');loadAll()}})})}catch(e){qs('metaStatus').textContent='Invalid JSON'}}
 	function metadataVersions(){var base=uniqueEvents(allEvents),sorted=allMetadata.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),groups=[];sorted.forEach(function(m){var ts=new Date(m.created_at).getTime(),g=groups.find(function(x){return x.app===m.app&&Math.abs(new Date(x.created_at).getTime()-ts)<60000});if(g)g.locales.push(m);else groups.push({app:m.app,created_at:m.created_at,locales:[m]})});groups.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});return groups.map(function(g,i,arr){var start=new Date(g.created_at),end=i===0?new Date():new Date(arr[i-1].created_at),ev=base.filter(function(e){var d=new Date(e.created_at);return e.app===g.app&&d>=start&&d<end}),s=summary(ev),days=Math.max(1,Math.ceil((end-start)/864e5));return{g:g,start:start,end:end,s:s,days:days,active:i===0}})}
-function renderMetadata(){var versions=metadataVersions();qs('latestMetadata').innerHTML=versions.length?metaSmall(versions[0]):'<div class="empty">No metadata entries</div>';qs('metadataTimeline').innerHTML=versions.length?versions.map(metaCard).join(''):'<div class="empty">No metadata entries</div>';renderLocaleImpact(versions);qs('versionPerformance').innerHTML=versions.slice(0,5).map(function(v,i){return'<div class="row"><div><div class="row-main">v'+(versions.length-i)+' · '+esc(v.g.app)+' '+(v.active?'· active':'')+'</div><div class="row-sub">'+v.days+' days · '+v.s.dl.length+' downloads</div></div><div class="right"><div class="row-main gold">$'+v.s.rev.toFixed(2)+'</div><div class="row-sub">$'+(v.s.rev/v.days).toFixed(2)+'/day</div></div></div>'}).join('')||'<div class="empty">No data</div>'}
+function renderMetadata(){var versions=metadataVersions(),latest=qs('latestMetadata'),timeline=qs('metadataTimeline'),locale=qs('localeImpact'),perf=qs('versionPerformance');if(latest)latest.innerHTML=versions.length?metaSmall(versions[0]):'<div class="empty">No metadata entries</div>';if(timeline)timeline.innerHTML=versions.length?versions.map(metaCard).join(''):'<div class="empty">No metadata entries</div>';if(locale)renderLocaleImpact(versions);if(perf)perf.innerHTML=versions.slice(0,5).map(function(v,i){return'<div class="row"><div><div class="row-main">v'+(versions.length-i)+' · '+esc(v.g.app)+' '+(v.active?'· active':'')+'</div><div class="row-sub">'+v.days+' days · '+v.s.dl.length+' downloads</div></div><div class="right"><div class="row-main gold">$'+v.s.rev.toFixed(2)+'</div><div class="row-sub">$'+(v.s.rev/v.days).toFixed(2)+'/day</div></div></div>'}).join('')||'<div class="empty">No data</div>'}
 function metaSmall(v){return'<div class="row"><div><div class="row-main">'+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+' revenue · '+v.days+' days</div></div></div>'}
 function metaCard(v){var ids=v.g.locales.map(function(l){return l.id}).filter(Boolean).join(','),panel='meta-detail-'+ids.replace(/,/g,'-');return'<div class="row" style="display:block"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div class="row-main">'+(v.active?'<span class="pill code">active</span> ':'')+esc(v.g.app)+' · '+v.g.locales.map(function(l){return esc(l.locale)}).join(', ')+'</div><div class="row-sub">'+v.start.toLocaleDateString('tr-TR')+' -> '+(v.active?'now':v.end.toLocaleDateString('tr-TR'))+' · '+v.s.dl.length+' downloads · $'+v.s.rev.toFixed(2)+'</div></div><div class="mini-actions"><div class="right"><div class="row-main blue">'+(v.s.dl.length/v.days).toFixed(1)+'</div><div class="row-sub">dl/day</div></div><button class="ghost" onclick="toggleMetaDetail(\''+panel+'\')">View</button><button class="ghost danger" onclick="deleteMetadataGroup(\''+ids+'\')">Delete</button></div></div><div id="'+panel+'" class="hide" style="margin-top:14px;border-top:1px solid #2a303d;padding-top:12px">'+metaDetail(v.g.locales)+'</div></div>'}
 function metaDetail(locales){return locales.map(function(l){return'<div style="padding:12px 0;border-bottom:1px solid #222837"><div class="row-main gold">'+esc(l.locale||'unknown')+'</div><div class="row-sub"><b>Title:</b> '+esc(l.title||'-')+'</div><div class="row-sub"><b>Subtitle:</b> '+esc(l.subtitle||'-')+'</div><div class="row-sub"><b>Keywords:</b> '+esc(l.keywords||'-')+'</div>'+(l.notes?'<div class="row-sub"><b>Notes:</b> '+esc(l.notes)+'</div>':'')+'</div>'}).join('')}
