@@ -29,9 +29,9 @@
 body{
   min-height:100vh;
   background:
-    radial-gradient(1100px 620px at 84% -14%,rgba(95,168,255,.07),transparent 60%),
-    radial-gradient(900px 560px at -8% 112%,rgba(230,184,92,.06),transparent 60%),
-    var(--bg);
+    radial-gradient(1100px 620px at 84% -14%,rgba(95,168,255,.075),transparent 60%),
+    radial-gradient(900px 560px at -8% 112%,rgba(230,184,92,.075),transparent 60%),
+    linear-gradient(180deg,#0b0d12 0%,#0c0e13 44%,#0a0c10 100%);
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,system-ui,sans-serif;
 }
@@ -53,7 +53,7 @@ svg{display:block}
 /* APP SHELL */
 .shell{display:none}
 .app{display:flex;min-height:100vh}
-.sidebar{width:236px;flex:0 0 236px;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.sidebar{width:236px;flex:0 0 236px;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0) 42%),rgba(9,12,17,.72);box-shadow:16px 0 42px rgba(0,0,0,.18);backdrop-filter:blur(14px)}
 .logo{padding:4px 8px 18px}
 .logo .b{font-size:27px;font-weight:800;color:var(--gold2);line-height:1;text-shadow:0 0 22px rgba(243,205,114,.3)}
 .logo .d{font-size:18px;font-weight:600;color:var(--soft);margin-top:2px}
@@ -66,10 +66,11 @@ svg{display:block}
 .side-foot .st{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
 .dot.on{background:var(--green);box-shadow:0 0 9px rgba(70,224,138,.85)}
-.main{flex:1;min-width:0;padding:22px 26px;display:flex;flex-direction:column}
+.main{flex:1;min-width:0;padding:22px 26px;display:flex;flex-direction:column;background:radial-gradient(700px 360px at 52% -8%,rgba(230,184,92,.035),transparent 58%)}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
 .topbar .right{display:flex;align-items:center;gap:10px}
-.rt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);border:1px solid var(--line2);border-radius:10px;padding:8px 12px}
+.rt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;background:rgba(9,12,17,.42)}
+.topbar .rt{display:none}
 .quickbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .quickbar .sub{align-self:center}
 .filters{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
@@ -80,7 +81,12 @@ svg{display:block}
 .seg button{flex:0 0 auto;border:none;background:transparent;color:var(--muted);padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:700}
 .seg button.active{background:rgba(230,184,92,.14);color:var(--gold2);box-shadow:inset 0 0 0 1px rgba(230,184,92,.3)}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
-.card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 42%),var(--panel2);border:1px solid var(--line);border-radius:18px;padding:18px}
+.card{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.026),transparent 42%),var(--panel2);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-2px);border-color:rgba(230,184,92,.20);box-shadow:0 24px 64px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.045)}
+.card:nth-child(1){background:radial-gradient(420px 160px at 86% 0%,rgba(95,168,255,.13),transparent 56%),linear-gradient(180deg,rgba(255,255,255,.026),transparent 42%),var(--panel2);border-color:rgba(95,168,255,.18)}
+.card:nth-child(2){background:radial-gradient(420px 160px at 86% 0%,rgba(70,224,138,.12),transparent 56%),linear-gradient(180deg,rgba(255,255,255,.026),transparent 42%),var(--panel2);border-color:rgba(70,224,138,.17)}
+.card:nth-child(3){background:radial-gradient(420px 160px at 86% 0%,rgba(230,184,92,.16),transparent 56%),linear-gradient(180deg,rgba(255,255,255,.026),transparent 42%),var(--panel2);border-color:rgba(230,184,92,.24)}
+.card:nth-child(4){background:radial-gradient(420px 160px at 86% 0%,rgba(187,155,255,.14),transparent 56%),linear-gradient(180deg,rgba(255,255,255,.026),transparent 42%),var(--panel2);border-color:rgba(187,155,255,.19)}
 .card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:0 0 42px}
 .ico svg{width:20px;height:20px;stroke-width:1.9;fill:none}
@@ -94,17 +100,20 @@ svg{display:block}
 .sub{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
 .blue{color:var(--blue)}.green{color:var(--green)}.gold{color:var(--gold2)}.purple{color:var(--purple)}
 .layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,1fr);gap:14px;margin-bottom:14px}
-.section{background:linear-gradient(180deg,rgba(255,255,255,.018),transparent 38%),var(--panel2);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+.section{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.022),transparent 38%),var(--panel2);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 18px 50px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.032)}
+.section:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(230,184,92,.26),transparent);opacity:.7;pointer-events:none}
+.section-head,.section>*:not(:before){position:relative}
 .section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
 .section-title{font-size:17px;font-weight:800}
 .section-note{font-size:12px;color:var(--muted);line-height:1.4;font-weight:400}
 .legend{display:flex;gap:16px;align-items:center;margin-bottom:6px}
 .legend span{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
 .legend i{width:14px;height:8px;border-radius:3px;display:inline-block}
-.bars{height:230px;display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);padding-top:16px;margin-top:8px}
+.bars{height:230px;display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);padding-top:16px;margin-top:8px;background:repeating-linear-gradient(to top,rgba(255,255,255,.045) 0,rgba(255,255,255,.045) 1px,transparent 1px,transparent 41px);border-radius:12px 12px 0 0;padding-left:8px;padding-right:8px}
 .bar-wrap{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px}
 .bar-num{height:12px;font-size:9px;color:#8a909c}
-.bar{width:100%;min-height:3px;background:linear-gradient(180deg,var(--gold2),var(--gold));border-radius:4px 4px 0 0;box-shadow:0 0 10px rgba(230,184,92,.4)}
+.bar{width:100%;min-height:3px;background:linear-gradient(180deg,var(--gold2),var(--gold));border-radius:4px 4px 0 0;box-shadow:0 0 10px rgba(230,184,92,.4);transition:height .25s ease,transform .18s ease,filter .18s ease,box-shadow .18s ease}
+.bar-wrap:hover .bar{transform:scaleY(1.045);filter:brightness(1.18);box-shadow:0 0 16px rgba(230,184,92,.58)}
 .bar.rev{background:linear-gradient(180deg,var(--gold2),var(--gold))}
 .bar-lbl{font-size:8px;color:#6a717e;white-space:nowrap;overflow:hidden;max-width:100%}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0}
@@ -119,6 +128,9 @@ svg{display:block}
 .pill.update{background:rgba(187,155,255,.14);color:var(--purple)}
 .progress{height:9px;background:#1c212c;border-radius:999px;overflow:hidden;margin-top:10px}
 .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--gold2));box-shadow:0 0 14px rgba(230,184,92,.45)}
+.fill.pc{background:linear-gradient(90deg,var(--blue),#8cc2ff);box-shadow:0 0 14px rgba(95,168,255,.38)}
+.fill.yula{background:linear-gradient(90deg,var(--green),#93f3bd);box-shadow:0 0 14px rgba(70,224,138,.35)}
+.fill.appconsol{background:linear-gradient(90deg,var(--purple),#d4c3ff);box-shadow:0 0 14px rgba(187,155,255,.34)}
 .table{width:100%;border-collapse:collapse}
 .table th{font-size:11px;color:#8893a2;text-align:left;border-bottom:1px solid var(--line);padding:9px 0;text-transform:uppercase;letter-spacing:.05em}
 .table td{font-size:13px;color:#e4e8ef;border-bottom:1px solid var(--line);padding:12px 0;vertical-align:top}
@@ -155,6 +167,8 @@ body.mobile-mode .logo .b{font-size:22px}
 body.mobile-mode .nav{flex-direction:row;flex-wrap:wrap;flex:1}
 body.mobile-mode .tab{width:auto;padding:9px 11px;font-size:13px}
 body.mobile-mode .side-foot{margin:0;border:none;padding:0;flex-direction:row;width:100%}
+body.mobile-mode .topbar .rt{display:flex}
+body.mobile-mode .side-foot .st{display:none}
 body.mobile-mode #tabsBtn{display:inline-flex}
 body.mobile-mode .main{padding:16px}
 body.mobile-mode .layout,body.mobile-mode .two,body.mobile-mode .three{grid-template-columns:1fr}
@@ -169,10 +183,13 @@ body.desktop-mode #tabsMenu.hide{display:flex!important}
   .nav{flex-direction:row;flex-wrap:wrap;flex:1}
   .tab{width:auto;padding:9px 11px;font-size:13px}
   .side-foot{margin:0;border:none;padding:0;flex-direction:row;width:100%}
+  .topbar .rt{display:flex}
+  .side-foot .st{display:none}
   .nav.hide{display:none!important}
   #tabsBtn{display:inline-flex}
   .main{padding:16px}
   .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .card:hover{transform:none}
   .value{font-size:28px}
   .form-row{grid-template-columns:1fr}
 }
@@ -493,8 +510,8 @@ function saveMonthlyGoal(){var n=parseFloat(qs('goalInput').value);if(!isFinite(
 function renderGoal(){var goal=parseFloat(localStorage.getItem('monthly_goal_usd')||'0'),s=summary(monthEvents()),rev=s.rev,txt=qs('goalText'),sub=qs('goalSub'),fill=qs('goalFill'),pct=qs('goalPercent');if(!goal){qs('goalInput').value='';txt.textContent='No monthly goal set';sub.textContent='Set a USD revenue target for this month.';fill.style.width='0%';pct.textContent='0%';return}qs('goalInput').value=goal;var p=Math.min(100,Math.round(rev/goal*100));txt.textContent='$'+rev.toFixed(2)+' of $'+goal.toFixed(2)+' this month';sub.textContent=s.paid.length+' paid purchases · '+s.freeCode.length+' free codes · '+s.dl.length+' downloads';fill.style.width=p+'%';pct.textContent=p+'%';var key='goal_celebrated_'+monthKey()+'_'+currentApp;if(rev>=goal&&!localStorage.getItem(key)){localStorage.setItem(key,'1');burstConfetti();toast('Monthly goal reached')}}
 function burstConfetti(ms){ms=ms||5200;var box=document.createElement('div');box.className='confetti';for(var i=0;i<190;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=['#d4b56a','#f8e08e','#62df86','#73a9ff','#ff7ab6','#b69cff','#2dd4bf'][i%7];p.style.animationDelay=(Math.random()*1.15)+'s';p.style.animationDuration=(3.1+Math.random()*1.35)+'s';p.style.transform='rotate('+(Math.random()*240)+'deg)';box.appendChild(p)}document.body.appendChild(box);setTimeout(function(){box.remove()},ms)}
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function renderChart(ev){var data=[],labels=[],title='Activity';if(currentTime==='today'){title='Today by hour';var now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate());for(var h=0;h<24;h++){var hs=new Date(start.getTime()+h*3600000),he=new Date(start.getTime()+(h+1)*3600000),hh=String(h).padStart(2,'0');data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=hs&&d<he}).length);labels.push(h%6===0?hh+':00':'')}}else if(currentTime==='7d'||currentTime==='30d'){var days=currentTime==='7d'?7:30;title=currentTime==='7d'?'Last 7 days':'Last 30 days';for(var i=days-1;i>=0;i--){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);var next=new Date(d);next.setDate(next.getDate()+1);data.push(ev.filter(function(e){var x=new Date(e.created_at);return x>=d&&x<next}).length);labels.push(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]:(i%6===0?d.getDate()+'/'+(d.getMonth()+1):''))}}else{title='All time by week';if(ev.length){var sorted=ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),first=new Date(sorted[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));for(var w=weeks-1;w>=0;w--){var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=ws&&d<we}).length);labels.push(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''))}}}var titleEl=qs('activityTitle'),chartEl=qs('activityChart');if(titleEl)titleEl.textContent=title;if(!chartEl)return;var mx=Math.max.apply(null,data)||1;chartEl.innerHTML=data.length?data.map(function(v,i){return'<div class="bar-wrap"><div class="bar-num">'+(v||'')+'</div><div class="bar" style="height:'+Math.max(3,Math.round(v/mx*165))+'px"></div><div class="bar-lbl">'+labels[i]+'</div></div>'}).join(''):'<div class="empty">No data yet</div>'}
-	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100);rows+='<div class="row"><div><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill" style="width:'+w+'%"></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
+function renderChart(ev){var data=[],labels=[],title='Activity';if(currentTime==='today'){title='Today by hour';var now=new Date(),startDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());for(var h=0;h<24;h++){var hs=new Date(startDay.getTime()+h*3600000),he=new Date(startDay.getTime()+(h+1)*3600000),hh=String(h).padStart(2,'0');data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=hs&&d<he}).length);labels.push(h%6===0?hh+':00':'')}}else if(currentTime==='7d'||currentTime==='30d'){var days=currentTime==='7d'?7:30;title=currentTime==='7d'?'Last 7 days':'Last 30 days';for(var i=days-1;i>=0;i--){var day=new Date();day.setHours(0,0,0,0);day.setDate(day.getDate()-i);var next=new Date(day);next.setDate(next.getDate()+1);data.push(ev.filter(function(e){var x=new Date(e.created_at);return x>=day&&x<next}).length);labels.push(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.getDay()]:(i%6===0?day.getDate()+'/'+(day.getMonth()+1):''))}}else{title='All time by week';if(ev.length){var sorted=ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),first=new Date(sorted[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));for(var w=weeks-1;w>=0;w--){var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=ws&&d<we}).length);labels.push(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''))}}}var titleEl=qs('activityTitle'),chartEl=qs('activityChart');if(titleEl)titleEl.textContent=title;if(!chartEl)return;var mx=Math.max.apply(null,data)||1;chartEl.innerHTML=data.length?data.map(function(v,i){var height=Math.max(3,Math.round(v/mx*165));return'<div class="bar-wrap" title="'+esc((labels[i]||'Period')+': '+v)+'"><div class="bar-num">'+(v||'')+'</div><div class="bar" style="height:'+height+'px"></div><div class="bar-lbl">'+esc(labels[i])+'</div></div>'}).join(''):'<div class="empty">No data yet</div>'}
+	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},classes={personalcapsule:'pc',yula:'yula',appconsol:'appconsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100),cls=classes[x.app]||'';rows+='<div class="row"><div><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill '+cls+'" style="width:'+w+'%"></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
 function renderOverviewEvents(ev){var rc=ev.slice(0,4);qs('overviewEvents').innerHTML=rc.length?rc.map(eventRowMini).join(''):'<div class="empty">No events</div>'}
 function eventBadge(e){if(e.event==='download'&&e.source==='update')return'<span class="pill update">update</span>';if(e.event==='download')return'<span class="pill download">download</span>';if(e.source==='offerCode')return'<span class="pill code">code</span>';return'<span class="pill purchase">'+esc(e.event)+'</span>'}
 function eventRowMini(e){var d=new Date(e.created_at);var detail=e.event==='purchase'&&e.price?(e.price+' '+(e.currency||'USD')):(e.locale||'');return'<div class="row"><div><div class="row-main">'+eventBadge(e)+' '+esc(e.app||'')+'</div><div class="row-sub">'+d.toLocaleString('tr-TR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · '+esc(detail)+'</div></div></div>'}
