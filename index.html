@@ -175,6 +175,30 @@ body.mobile-mode .layout,body.mobile-mode .two,body.mobile-mode .three{grid-temp
 body.mobile-mode .grid{grid-template-columns:1fr 1fr;gap:10px}
 body.desktop-mode #tabsMenu.hide{display:flex!important}
 
+
+/* Premium refinements */
+.login{background:radial-gradient(700px 360px at 50% 18%,rgba(230,184,92,.11),transparent 60%),radial-gradient(520px 320px at 80% 80%,rgba(95,168,255,.07),transparent 62%)}
+.login-card{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.032),rgba(255,255,255,.008) 48%),rgba(19,22,29,.88);box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(16px)}
+.login-card:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(243,205,114,.56),transparent)}
+.login-mark{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;background:linear-gradient(180deg,rgba(243,205,114,.20),rgba(230,184,92,.08));border:1px solid rgba(230,184,92,.32);box-shadow:0 14px 34px rgba(230,184,92,.10);color:var(--gold2);font-weight:850;font-size:22px;letter-spacing:-.04em}
+.login-card .field{background:rgba(10,13,18,.82)}
+.bars{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.045);border-bottom-color:var(--line);padding-bottom:22px}
+.chart-bars{position:relative;z-index:2;height:100%;display:flex;align-items:flex-end;gap:6px;width:100%}
+.rev-line{position:absolute;left:8px;right:8px;top:16px;bottom:24px;width:calc(100% - 16px);height:calc(100% - 40px);overflow:visible;z-index:3;pointer-events:none}
+.rev-line polyline{fill:none;stroke:rgba(243,205,114,.78);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(243,205,114,.35))}
+.rev-line circle{fill:#f3cd72;stroke:#10131a;stroke-width:1.5;filter:drop-shadow(0 0 7px rgba(243,205,114,.42))}
+.bar-tip{display:none;position:absolute;bottom:100%;left:50%;transform:translate(-50%,-8px);white-space:nowrap;background:#0e1118;border:1px solid var(--line2);border-radius:10px;padding:8px 9px;box-shadow:0 14px 34px rgba(0,0,0,.45);font-size:11px;color:var(--soft);z-index:8;text-align:left}
+.bar-tip b{display:block;color:var(--text);font-size:12px;margin-bottom:2px}
+.bar-wrap{position:relative;z-index:4}
+.bar-wrap:hover .bar-tip{display:block}
+.app-line{display:flex;align-items:center;gap:10px;min-width:0}
+.app-avatar{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:0 0 34px;font-size:11px;font-weight:850;letter-spacing:.02em;background:#202632;color:var(--soft);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+.app-avatar.pc{background:rgba(95,168,255,.13);color:var(--blue);box-shadow:inset 0 0 0 1px rgba(95,168,255,.25)}
+.app-avatar.yula{background:rgba(70,224,138,.13);color:var(--green);box-shadow:inset 0 0 0 1px rgba(70,224,138,.25)}
+.app-avatar.appconsol{background:rgba(187,155,255,.13);color:var(--purple);box-shadow:inset 0 0 0 1px rgba(187,155,255,.25)}
+.clear-confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.clear-confirm .field{width:120px;padding:8px 10px}.clear-warning{color:var(--red);font-size:12px;margin-top:6px;text-align:right}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.card{padding:16px}.section{padding:16px;border-radius:16px}.sidebar{padding:12px}.nav{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.tab{flex:0 0 auto}.filters{gap:10px}.seg-wrap{width:100%;align-items:flex-start;flex-direction:column}.seg{width:100%}.value{font-size:30px}.bars{height:220px}.chart-bars{gap:4px}.bar-tip{display:none!important}.table{min-width:650px}#panel-events .section{overflow-x:auto}.topbar{gap:8px}.quickbar{display:grid;grid-template-columns:1fr 1fr}.quickbar .ghost{width:100%}}
+
 @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.three{grid-template-columns:1fr}.layout,.two{grid-template-columns:1fr}}
 @media(max-width:860px){
   .app{flex-direction:column}
@@ -198,8 +222,9 @@ body.desktop-mode #tabsMenu.hide{display:flex!important}
 <body>
 <div id="login" class="login">
   <div class="login-card">
+    <div class="login-mark">B</div>
     <h1>Barış Dashboard</h1>
-    <p>Private dashboard for high-level app business metrics. Enter your Supabase service key once, then unlock with your local password.</p>
+    <p>Private app business dashboard. Unlock your local encrypted Supabase connection.</p>
     <div id="setupBox" class="stack">
       <input id="keyInput" class="field" type="password" placeholder="Supabase service role key"/>
       <input id="pinSetup" class="field" type="password" placeholder="Set local password"/>
@@ -510,8 +535,57 @@ function saveMonthlyGoal(){var n=parseFloat(qs('goalInput').value);if(!isFinite(
 function renderGoal(){var goal=parseFloat(localStorage.getItem('monthly_goal_usd')||'0'),s=summary(monthEvents()),rev=s.rev,txt=qs('goalText'),sub=qs('goalSub'),fill=qs('goalFill'),pct=qs('goalPercent');if(!goal){qs('goalInput').value='';txt.textContent='No monthly goal set';sub.textContent='Set a USD revenue target for this month.';fill.style.width='0%';pct.textContent='0%';return}qs('goalInput').value=goal;var p=Math.min(100,Math.round(rev/goal*100));txt.textContent='$'+rev.toFixed(2)+' of $'+goal.toFixed(2)+' this month';sub.textContent=s.paid.length+' paid purchases · '+s.freeCode.length+' free codes · '+s.dl.length+' downloads';fill.style.width=p+'%';pct.textContent=p+'%';var key='goal_celebrated_'+monthKey()+'_'+currentApp;if(rev>=goal&&!localStorage.getItem(key)){localStorage.setItem(key,'1');burstConfetti();toast('Monthly goal reached')}}
 function burstConfetti(ms){ms=ms||5200;var box=document.createElement('div');box.className='confetti';for(var i=0;i<190;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=['#d4b56a','#f8e08e','#62df86','#73a9ff','#ff7ab6','#b69cff','#2dd4bf'][i%7];p.style.animationDelay=(Math.random()*1.15)+'s';p.style.animationDuration=(3.1+Math.random()*1.35)+'s';p.style.transform='rotate('+(Math.random()*240)+'deg)';box.appendChild(p)}document.body.appendChild(box);setTimeout(function(){box.remove()},ms)}
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function renderChart(ev){var data=[],labels=[],title='Activity';if(currentTime==='today'){title='Today by hour';var now=new Date(),startDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());for(var h=0;h<24;h++){var hs=new Date(startDay.getTime()+h*3600000),he=new Date(startDay.getTime()+(h+1)*3600000),hh=String(h).padStart(2,'0');data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=hs&&d<he}).length);labels.push(h%6===0?hh+':00':'')}}else if(currentTime==='7d'||currentTime==='30d'){var days=currentTime==='7d'?7:30;title=currentTime==='7d'?'Last 7 days':'Last 30 days';for(var i=days-1;i>=0;i--){var day=new Date();day.setHours(0,0,0,0);day.setDate(day.getDate()-i);var next=new Date(day);next.setDate(next.getDate()+1);data.push(ev.filter(function(e){var x=new Date(e.created_at);return x>=day&&x<next}).length);labels.push(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.getDay()]:(i%6===0?day.getDate()+'/'+(day.getMonth()+1):''))}}else{title='All time by week';if(ev.length){var sorted=ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),first=new Date(sorted[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));for(var w=weeks-1;w>=0;w--){var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);data.push(ev.filter(function(e){var d=new Date(e.created_at);return d>=ws&&d<we}).length);labels.push(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''))}}}var titleEl=qs('activityTitle'),chartEl=qs('activityChart');if(titleEl)titleEl.textContent=title;if(!chartEl)return;var mx=Math.max.apply(null,data)||1;chartEl.innerHTML=data.length?data.map(function(v,i){var height=Math.max(3,Math.round(v/mx*165));return'<div class="bar-wrap" title="'+esc((labels[i]||'Period')+': '+v)+'"><div class="bar-num">'+(v||'')+'</div><div class="bar" style="height:'+height+'px"></div><div class="bar-lbl">'+esc(labels[i])+'</div></div>'}).join(''):'<div class="empty">No data yet</div>'}
-	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},classes={personalcapsule:'pc',yula:'yula',appconsol:'appconsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100),cls=classes[x.app]||'';rows+='<div class="row"><div><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill '+cls+'" style="width:'+w+'%"></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
+function renderChart(ev){
+  var buckets=[],title='Activity';
+  function addBucket(label,start,end){
+    var rows=ev.filter(function(e){var d=new Date(e.created_at);return d>=start&&d<end});
+    var sum=summary(rows);
+    buckets.push({label:label,downloads:sum.dl.length,revenue:sum.rev,purchases:sum.pr.length});
+  }
+  if(currentTime==='today'){
+    title='Today by hour';
+    var now=new Date(),startDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    for(var h=0;h<24;h++){
+      var hs=new Date(startDay.getTime()+h*3600000),he=new Date(startDay.getTime()+(h+1)*3600000),hh=String(h).padStart(2,'0');
+      addBucket(h%6===0?hh+':00':'',hs,he);
+    }
+  }else if(currentTime==='7d'||currentTime==='30d'){
+    var days=currentTime==='7d'?7:30;
+    title=currentTime==='7d'?'Last 7 days':'Last 30 days';
+    for(var i=days-1;i>=0;i--){
+      var day=new Date();day.setHours(0,0,0,0);day.setDate(day.getDate()-i);
+      var next=new Date(day);next.setDate(next.getDate()+1);
+      addBucket(days===7?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.getDay()]:(i%6===0?day.getDate()+'/'+(day.getMonth()+1):''),day,next);
+    }
+  }else{
+    title='All time by week';
+    if(ev.length){
+      var sorted=ev.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)}),first=new Date(sorted[0].created_at),weeks=Math.min(52,Math.max(1,Math.ceil((new Date()-first)/(7*864e5))));
+      for(var w=weeks-1;w>=0;w--){
+        var ws=new Date(Date.now()-(w+1)*7*864e5),we=new Date(Date.now()-w*7*864e5);
+        addBucket(weeks<=12?ws.getDate()+'/'+(ws.getMonth()+1):(w%4===0?ws.getDate()+'/'+(ws.getMonth()+1):''),ws,we);
+      }
+    }
+  }
+  var titleEl=qs('activityTitle'),chartEl=qs('activityChart');
+  if(titleEl)titleEl.textContent=title;
+  if(!chartEl)return;
+  if(!buckets.length){chartEl.innerHTML='<div class="empty">No data yet</div>';return}
+  var maxDl=Math.max.apply(null,buckets.map(function(b){return b.downloads}))||1;
+  var maxRev=Math.max.apply(null,buckets.map(function(b){return b.revenue}))||0;
+  var bars=buckets.map(function(b,i){
+    var height=Math.max(3,Math.round(b.downloads/maxDl*165));
+    var label=esc(b.label||'');
+    return '<div class="bar-wrap"><div class="bar-tip"><b>'+esc(b.label||'Period')+'</b>'+b.downloads+' downloads<br>$'+b.revenue.toFixed(2)+' revenue<br>'+b.purchases+' purchases</div><div class="bar-num">'+(b.downloads||'')+'</div><div class="bar" style="height:'+height+'px"></div><div class="bar-lbl">'+label+'</div></div>';
+  }).join('');
+  var svg='';
+  if(maxRev>0&&buckets.length>1){
+    var pts=buckets.map(function(b,i){var x=(i/(buckets.length-1))*100,y=92-(b.revenue/maxRev)*78;return{x:x,y:y,txt:x.toFixed(2)+','+y.toFixed(2)}});
+    svg='<svg class="rev-line" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="'+pts.map(function(p){return p.txt}).join(' ')+'"/>'+pts.map(function(p){return '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="1.7"/>'}).join('')+'</svg>';
+  }
+  chartEl.innerHTML='<div class="chart-bars">'+bars+'</div>'+svg;
+}
+	function renderApps(){var base=uniqueEvents(allEvents),apps=['personalcapsule','yula','appconsol'],names={personalcapsule:'PersonalCapsule',yula:'Yula',appconsol:'AppConsol'},initials={personalcapsule:'PC',yula:'Y',appconsol:'AC'},classes={personalcapsule:'pc',yula:'yula',appconsol:'appconsol'},rows='',max=1;var stats=apps.map(function(a){var s=summary(base.filter(function(e){return e.app===a}));max=Math.max(max,s.rev,s.dl.length);return{app:a,s:s}});stats.forEach(function(x){var n=names[x.app],v=x.s.rev||x.s.dl.length,w=Math.round(v/max*100),cls=classes[x.app]||'';rows+='<div class="row"><div class="app-line"><span class="app-avatar '+cls+'">'+initials[x.app]+'</span><div style="min-width:0"><div class="row-main">'+n+'</div><div class="row-sub">'+x.s.dl.length+' downloads · '+x.s.pr.length+' purchases</div><div class="progress"><div class="fill '+cls+'" style="width:'+w+'%"></div></div></div></div><div class="right"><div class="row-main gold">$'+x.s.rev.toFixed(2)+'</div><div class="row-sub">'+(x.s.dl.length?(x.s.pr.length/x.s.dl.length*100).toFixed(1):'0')+'%</div></div></div>'});qs('appBreakdown').innerHTML=rows}
 function renderOverviewEvents(ev){var rc=ev.slice(0,4);qs('overviewEvents').innerHTML=rc.length?rc.map(eventRowMini).join(''):'<div class="empty">No events</div>'}
 function eventBadge(e){if(e.event==='download'&&e.source==='update')return'<span class="pill update">update</span>';if(e.event==='download')return'<span class="pill download">download</span>';if(e.source==='offerCode')return'<span class="pill code">code</span>';return'<span class="pill purchase">'+esc(e.event)+'</span>'}
 function eventRowMini(e){var d=new Date(e.created_at);var detail=e.event==='purchase'&&e.price?(e.price+' '+(e.currency||'USD')):(e.locale||'');return'<div class="row"><div><div class="row-main">'+eventBadge(e)+' '+esc(e.app||'')+'</div><div class="row-sub">'+d.toLocaleString('tr-TR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · '+esc(detail)+'</div></div></div>'}
@@ -520,9 +594,9 @@ function jsArg(v){return JSON.stringify(String(v))}
 function renderEvents(ev){var empty=qs('eventsEmpty'),body=qs('eventsTable');if(!body)return;if(empty)empty.classList.toggle('hide',ev.length>0);body.innerHTML=ev.slice(0,100).map(function(e){var d=new Date(e.created_at),detail=e.event==='purchase'&&e.price?(e.price+' '+(e.currency||'USD')):(e.locale||''),id=e.id;return'<tr><td>'+d.toLocaleString('tr-TR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</td><td>'+esc(e.app)+'</td><td>'+eventBadge(e)+'</td><td>'+esc(detail)+'</td><td class="right" id="'+domId('del-',id)+'"><button class="ghost danger" onclick="confirmDeleteEvent('+jsArg(id)+')">Delete</button></td></tr>'}).join('')}
 function confirmDeleteEvent(id){var el=qs(domId('del-',id));if(!el)return;el.innerHTML='<button class="ghost" onclick="renderAll()">Cancel</button> <button class="ghost danger" onclick="deleteEvent('+jsArg(id)+')">Confirm</button>'}
 function deleteEvent(id){fetch(SB+'/rest/v1/events?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:headers()}).then(function(r){if(r.ok)loadAll();else apiError(r,'Event delete')})}
-function askClearAll(){var ev=filtered();qs('clearArea').innerHTML='<span class="sub">Delete '+ev.length+' filtered?</span> <button class="ghost" onclick="resetClear()">Cancel</button> <button class="ghost danger" onclick="clearFiltered()">Confirm</button>'}
+function askClearAll(){var ev=filtered();qs('clearArea').innerHTML='<div class="clear-confirm"><span class="sub">Delete '+ev.length+' filtered?</span><input id="clearConfirmInput" class="field" placeholder="type DELETE"/><button class="ghost" onclick="resetClear()">Cancel</button><button class="ghost danger" onclick="clearFiltered()">Delete</button></div><div id="clearWarn" class="clear-warning"></div>'}
 function resetClear(){qs('clearArea').innerHTML='<button class="ghost danger" onclick="askClearAll()">Clear filtered</button>'}
-function clearFiltered(){var ids=filtered().map(function(e){return e.id}).filter(function(id){return id!==null&&id!==undefined});if(!ids.length)return;var list=ids.map(function(id){return encodeURIComponent(id)}).join(',');fetch(SB+'/rest/v1/events?id=in.('+list+')',{method:'DELETE',headers:headers()}).then(function(r){if(r.ok){resetClear();loadAll()}else apiError(r,'Clear filtered')})}
+function clearFiltered(){var input=qs('clearConfirmInput'),warn=qs('clearWarn');if(input&&input.value.trim()!=='DELETE'){if(warn)warn.textContent='Type DELETE to confirm.';return}var ids=filtered().map(function(e){return e.id}).filter(function(id){return id!==null&&id!==undefined});if(!ids.length)return;var list=ids.map(function(id){return encodeURIComponent(id)}).join(',');fetch(SB+'/rest/v1/events?id=in.('+list+')',{method:'DELETE',headers:headers()}).then(function(r){if(r.ok){resetClear();loadAll()}else apiError(r,'Clear filtered')})}
 function toggleMetaForm(){qs('metadataForm').classList.toggle('hide')}
 function clearMetaForm(){qs('metaJsonInput').value='';qs('metaStatus').textContent=''}
 function metaKey(m){return[String(m.app||'').trim().toLowerCase(),String(m.locale||'').trim().toLowerCase(),String(m.title||'').trim().toLowerCase(),String(m.subtitle||'').trim().toLowerCase(),String(m.keywords||'').trim().toLowerCase(),String(m.notes||'').trim().toLowerCase()].join('|')}
